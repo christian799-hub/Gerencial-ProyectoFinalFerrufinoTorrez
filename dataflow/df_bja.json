@@ -47,13 +47,86 @@
 					"name": "source6"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"name": "sink1"
+				},
+				{
+					"name": "sink2"
+				},
+				{
+					"name": "sink3"
+				},
+				{
+					"name": "sink4"
+				},
+				{
+					"name": "sink5"
+				},
+				{
+					"name": "sink6"
+				}
+			],
 			"transformations": [
 				{
 					"name": "CI"
 				},
 				{
 					"name": "NormalizarFechas"
+				},
+				{
+					"name": "Capitalizar"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "CI2"
+				},
+				{
+					"name": "NormalizarFechas2"
+				},
+				{
+					"name": "Capitalizar2"
+				},
+				{
+					"name": "filter2"
+				},
+				{
+					"name": "NormalizarDepartamento"
+				},
+				{
+					"name": "CI3"
+				},
+				{
+					"name": "nORMALIZARfECHAS3"
+				},
+				{
+					"name": "CI4"
+				},
+				{
+					"name": "NormalizarFechas4"
+				},
+				{
+					"name": "Capitalizar3"
+				},
+				{
+					"name": "filter3"
+				},
+				{
+					"name": "CI5"
+				},
+				{
+					"name": "NormalizarFechas5"
+				},
+				{
+					"name": "Capitalizar4"
+				},
+				{
+					"name": "Corregir"
+				},
+				{
+					"name": "filter4"
 				}
 			],
 			"scriptLines": [
@@ -74,13 +147,13 @@
 				"     ignoreNoFilesFound: false,",
 				"     partitionBy('hash', 1)) ~> source1",
 				"source(output(",
-				"          control_prenatal_id as string,",
+				"          control_prenatal_id as integer,",
 				"          ci_beneficiaria as string,",
-				"          establecimiento_id as string,",
-				"          nro_control as string,",
+				"          establecimiento_id as integer,",
+				"          nro_control as integer,",
 				"          fecha_control as string,",
-				"          semana_gestacion as string,",
-				"          peso_madre_kg as string,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as float,",
 				"          presion_arterial as string,",
 				"          resultado as string",
 				"     ),",
@@ -89,7 +162,7 @@
 				"     ignoreNoFilesFound: false,",
 				"     partitionBy('hash', 1)) ~> source2",
 				"source(output(",
-				"          establecimiento_id as string,",
+				"          establecimiento_id as integer,",
 				"          codigo_snis as string,",
 				"          nombre as string,",
 				"          tipo as string,",
@@ -104,11 +177,11 @@
 				"     ignoreNoFilesFound: false,",
 				"     partitionBy('hash', 1)) ~> source3",
 				"source(output(",
-				"          inscripcion_id as string,",
+				"          inscripcion_id as integer,",
 				"          ci_beneficiaria as string,",
-				"          establecimiento_id as string,",
+				"          establecimiento_id as integer,",
 				"          fecha_inscripcion as string,",
-				"          semana_gestacion as string,",
+				"          semana_gestacion as integer,",
 				"          estado as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
@@ -116,28 +189,28 @@
 				"     ignoreNoFilesFound: false,",
 				"     partitionBy('hash', 1)) ~> source4",
 				"source(output(",
-				"          pago_id as string,",
+				"          pago_id as integer,",
 				"          ci_beneficiaria as string,",
 				"          concepto_pago as string,",
-				"          monto_bs as string,",
+				"          monto_bs as float,",
 				"          fecha_pago as string,",
 				"          estado_pago as string,",
 				"          canal_pago as string,",
-				"          nro_comprobante as string",
+				"          nro_comprobante as integer",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     partitionBy('hash', 1)) ~> source5",
 				"source(output(",
-				"          parto_id as string,",
+				"          parto_id as integer,",
 				"          ci_madre as string,",
 				"          ci_recien_nacido as string,",
-				"          establecimiento_id as string,",
+				"          establecimiento_id as integer,",
 				"          fecha_parto as string,",
 				"          tipo_parto as string,",
-				"          peso_nacimiento_kg as string,",
-				"          talla_nacimiento_cm as string",
+				"          peso_nacimiento_kg as float,",
+				"          talla_nacimiento_cm as float",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -145,7 +218,52 @@
 				"     partitionBy('hash', 1)) ~> source6",
 				"source1 derive(ci_nino = regexReplace(ci_nino, '[^0-9]', ''),",
 				"          ci_madre = regexReplace(ci_madre, '[^0-9]', '')) ~> CI",
-				"CI derive(fecha_control = toString(coalesce(toDate({fecha_control}, 'yyyy-MM-dd'), toDate({fecha_control}, 'dd/MM/yyyy'), toDate({fecha_control}, 'MM/dd/yyyy'), toDate({fecha_control}, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas"
+				"CI derive(fecha_control = toString(coalesce(toDate({fecha_control}, 'yyyy-MM-dd'), toDate({fecha_control}, 'dd/MM/yyyy'), toDate({fecha_control}, 'MM/dd/yyyy'), toDate({fecha_control}, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas",
+				"NormalizarFechas derive(resultado = initCap(lower(resultado)),",
+				"          vacuna_aplicada = initCap(lower(vacuna_aplicada))) ~> Capitalizar",
+				"Capitalizar filter(!isNull(vacuna_aplicada) && !isNull(resultado)) ~> filter1",
+				"source2 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI2",
+				"CI2 derive(fecha_control = toString(coalesce(toDate(fecha_control, 'yyyy-MM-dd'), toDate(fecha_control, 'dd/MM/yyyy'), toDate(fecha_control, 'MM/dd/yyyy'), toDate(fecha_control, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas2",
+				"NormalizarFechas2 derive(resultado = initCap(lower(resultado))) ~> Capitalizar2",
+				"Capitalizar2 filter(!isNull(resultado)) ~> filter2",
+				"source3 derive(departamento = case(upper({departamento}) == 'LA PAZ', 'LP', upper({departamento}) == 'COCHABAMBA', 'CB', upper({departamento}) == 'SANTA CRUZ', 'SC', upper({departamento}) == 'ORURO', 'OR', upper({departamento}) == 'POTOSI' || upper({departamento}) == 'POTOSÍ', 'PT', upper({departamento}) == 'TARIJA', 'TJ', upper({departamento}) == 'CHUQUISACA', 'CH', upper({departamento}) == 'BENI', 'BN', upper({departamento}) == 'PANDO', 'PD', upper({departamento}))) ~> NormalizarDepartamento",
+				"source4 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI3",
+				"CI3 derive(fecha_inscripcion = toString(coalesce(toDate(fecha_inscripcion, 'yyyy-MM-dd'), toDate(fecha_inscripcion, 'dd/MM/yyyy'), toDate(fecha_inscripcion, 'MM/dd/yyyy'), toDate(fecha_inscripcion, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> nORMALIZARfECHAS3",
+				"source5 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI4",
+				"CI4 derive(fecha_pago = toString(coalesce(toDate(fecha_pago, 'yyyy-MM-dd'), toDate(fecha_pago, 'dd/MM/yyyy'), toDate(fecha_pago, 'MM/dd/yyyy'), toDate(fecha_pago, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas4",
+				"NormalizarFechas4 derive(canal_pago = initCap(lower(canal_pago)),",
+				"          estado_pago = initCap(lower(estado_pago))) ~> Capitalizar3",
+				"Capitalizar3 filter(!isNull(nro_comprobante)) ~> filter3",
+				"source6 derive(ci_recien_nacido = regexReplace(ci_recien_nacido, '[^0-9]', ''),",
+				"          ci_madre = regexReplace(ci_madre, '[^0-9]', '')) ~> CI5",
+				"CI5 derive(fecha_parto = toString(coalesce(toDate(fecha_parto, 'yyyy-MM-dd'), toDate(fecha_parto, 'dd/MM/yyyy'), toDate(fecha_parto, 'MM/dd/yyyy'), toDate(fecha_parto, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas5",
+				"NormalizarFechas5 derive(tipo_parto = initCap(lower(tipo_parto))) ~> Capitalizar4",
+				"Capitalizar4 derive(tipo_parto = case(     initCap(lower(tipo_parto)) == 'Cessárea' || initCap(lower(tipo_parto)) == 'Cesárae' || initCap(lower(tipo_parto)) == 'Cesárrea', 'Cesárea',     initCap(lower(tipo_parto)) == 'Nattural' || initCap(lower(tipo_parto)) == 'Naturl', 'Natural',     initCap(lower(tipo_parto)) )) ~> Corregir",
+				"Corregir filter(!isNull(tipo_parto)) ~> filter4",
+				"filter1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1",
+				"filter2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink2",
+				"NormalizarDepartamento sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink3",
+				"nORMALIZARfECHAS3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink4",
+				"filter3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink5",
+				"filter4 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink6"
 			]
 		}
 	}
