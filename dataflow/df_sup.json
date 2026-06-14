@@ -1,0 +1,317 @@
+{
+	"name": "df_sup",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sup_boletas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_catalogoPaquetes",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_controles",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_establecimientos",
+						"type": "DatasetReference"
+					},
+					"name": "source6"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_inscripciones",
+						"type": "DatasetReference"
+					},
+					"name": "source7"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "sup_boletas_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_catalogoPaquetes_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_controles_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_entregas_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink4"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_establecimientos_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink5"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_inscripciones_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink6"
+				}
+			],
+			"transformations": [
+				{
+					"name": "CI"
+				},
+				{
+					"name": "NormalizarFechas"
+				},
+				{
+					"name": "Capitalizar"
+				},
+				{
+					"name": "CI2"
+				},
+				{
+					"name": "NormalizarFechas2"
+				},
+				{
+					"name": "CI3"
+				},
+				{
+					"name": "NormalizarFechas3"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "Capitalizar2"
+				},
+				{
+					"name": "CorregirGeografia"
+				},
+				{
+					"name": "CI4"
+				},
+				{
+					"name": "NormalizarFechas4"
+				},
+				{
+					"name": "Capitalizar3"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          boleta_id as integer,",
+				"          control_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          nro_boleta as string,",
+				"          fecha_emision as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source1",
+				"source(output(",
+				"          paquete_id as integer,",
+				"          nombre as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as float,",
+				"          costo_estimado_bs as float",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source2",
+				"source(output(",
+				"          control_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as integer,",
+				"          nro_control as integer,",
+				"          fecha_control as string,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as float,",
+				"          presion_arterial as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source3",
+				"source(output(",
+				"          entrega_id as integer,",
+				"          boleta_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as integer,",
+				"          paquete_id as integer,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as string,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as float,",
+				"          fecha_proxima_entrega as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source5",
+				"source(output(",
+				"          establecimiento_id as integer,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source6",
+				"source(output(",
+				"          inscripcion_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as integer,",
+				"          fecha_inscripcion as string,",
+				"          semana_gestacion as integer,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source7",
+				"source1 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI",
+				"CI derive(fecha_emision = toString(coalesce(toDate(fecha_emision, 'yyyy-MM-dd'), toDate(fecha_emision, 'dd/MM/yyyy'), toDate(fecha_emision, 'MM/dd/yyyy'), toDate(fecha_emision, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas",
+				"NormalizarFechas derive(estado = initCap(lower(estado))) ~> Capitalizar",
+				"source3 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI2",
+				"CI2 derive(fecha_control = toString(coalesce(toDate(fecha_control, 'yyyy-MM-dd'), toDate(fecha_control, 'dd/MM/yyyy'), toDate(fecha_control, 'MM/dd/yyyy'), toDate(fecha_control, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas2",
+				"source5 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI3",
+				"CI3 derive(fecha_entrega = toString(coalesce(toDate(fecha_entrega, 'yyyy-MM-dd'), toDate(fecha_entrega, 'dd/MM/yyyy'), toDate(fecha_entrega, 'MM/dd/yyyy'), toDate(fecha_entrega, 'dd-MM-yyyy')), 'dd/MM/yyyy'),",
+				"          fecha_proxima_entrega = toString(coalesce(toDate(fecha_proxima_entrega, 'yyyy-MM-dd'), toDate(fecha_proxima_entrega, 'dd/MM/yyyy'), toDate(fecha_proxima_entrega, 'MM/dd/yyyy'), toDate(fecha_proxima_entrega, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas3",
+				"NormalizarFechas3 filter(!isNull(lote_produccion)) ~> filter1",
+				"source6 derive(estado = initCap(lower(estado))) ~> Capitalizar2",
+				"Capitalizar2 derive(departamento = case(upper(departamento) == 'LA PAZ', 'LP', upper(departamento) == 'COCHABAMBA', 'CB', upper(departamento) == 'SANTA CRUZ', 'SC', upper(departamento) == 'ORURO', 'OR', upper(departamento) == 'POTOSI' || upper(departamento) == 'POTOSÍ', 'PT', upper(departamento) == 'TARIJA', 'TJ', upper(departamento) == 'CHUQUISACA', 'CH', upper(departamento) == 'BENI', 'BN', upper(departamento) == 'PANDO', 'PD', upper(departamento))) ~> CorregirGeografia",
+				"source7 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI4",
+				"CI4 derive(fecha_inscripcion = toString(coalesce(toDate(fecha_inscripcion, 'yyyy-MM-dd'), toDate(fecha_inscripcion, 'dd/MM/yyyy'), toDate(fecha_inscripcion, 'MM/dd/yyyy'), toDate(fecha_inscripcion, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas4",
+				"NormalizarFechas4 derive(estado = initCap(lower(estado))) ~> Capitalizar3",
+				"Capitalizar sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          afiliacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          empleador_id as string,",
+				"          caja_id as string,",
+				"          fecha_afiliacion as string,",
+				"          nro_matricula as string,",
+				"          tipo_subsidio as string,",
+				"          estado as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1",
+				"source2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          afiliacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          empleador_id as string,",
+				"          caja_id as string,",
+				"          fecha_afiliacion as string,",
+				"          nro_matricula as string,",
+				"          tipo_subsidio as string,",
+				"          estado as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink2",
+				"NormalizarFechas2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          afiliacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          empleador_id as string,",
+				"          caja_id as string,",
+				"          fecha_afiliacion as string,",
+				"          nro_matricula as string,",
+				"          tipo_subsidio as string,",
+				"          estado as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink3",
+				"filter1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          afiliacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          empleador_id as string,",
+				"          caja_id as string,",
+				"          fecha_afiliacion as string,",
+				"          nro_matricula as string,",
+				"          tipo_subsidio as string,",
+				"          estado as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink4",
+				"CorregirGeografia sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          afiliacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          empleador_id as string,",
+				"          caja_id as string,",
+				"          fecha_afiliacion as string,",
+				"          nro_matricula as string,",
+				"          tipo_subsidio as string,",
+				"          estado as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink5",
+				"Capitalizar3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          afiliacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          empleador_id as string,",
+				"          caja_id as string,",
+				"          fecha_afiliacion as string,",
+				"          nro_matricula as string,",
+				"          tipo_subsidio as string,",
+				"          estado as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink6"
+			]
+		}
+	}
+}

@@ -1,0 +1,325 @@
+{
+	"name": "df_spl",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "spl_afiliaciones",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_asignaciones_mensuales",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_cajas_salud",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_certificados_medicos",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_empleadores",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_entregas_agencia",
+						"type": "DatasetReference"
+					},
+					"name": "source6"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_entregas_supermercado",
+						"type": "DatasetReference"
+					},
+					"name": "source7"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_supermercados_autorizados",
+						"type": "DatasetReference"
+					},
+					"name": "source8"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "spl_cajas_salud_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_afiliaciones_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_asignaciones_mensuales_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_certificados_medicos_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink4"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_empleadores_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink5"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_entregas_agencia_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink6"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_entregas_supermercado_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink7"
+				},
+				{
+					"dataset": {
+						"referenceName": "spl_supermercados_autorizados_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink8"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Tipografia"
+				},
+				{
+					"name": "NormalizarFechas2"
+				},
+				{
+					"name": "CI2"
+				},
+				{
+					"name": "CI3"
+				},
+				{
+					"name": "CI"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "NormalizarFechas1"
+				},
+				{
+					"name": "filter2"
+				},
+				{
+					"name": "NormalizarFechas"
+				},
+				{
+					"name": "Capitalizar"
+				},
+				{
+					"name": "filter3"
+				},
+				{
+					"name": "CorrecionErrores"
+				},
+				{
+					"name": "NormalizarFechas3"
+				},
+				{
+					"name": "Capitalizar2"
+				},
+				{
+					"name": "filter4"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          afiliacion_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          empleador_id as integer,",
+				"          caja_id as integer,",
+				"          fecha_afiliacion as string,",
+				"          nro_matricula as string,",
+				"          tipo_subsidio as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source1",
+				"source(output(",
+				"          asignacion_id as integer,",
+				"          afiliacion_id as integer,",
+				"          mes as integer,",
+				"          gestion as integer,",
+				"          monto_bs as float,",
+				"          monto_productos as float,",
+				"          monto_carnes as float,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source2",
+				"source(output(",
+				"          caja_id as integer,",
+				"          nombre as string,",
+				"          sigla as string,",
+				"          tipo as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source3",
+				"source(output(",
+				"          certificado_id as integer,",
+				"          afiliacion_id as integer,",
+				"          fecha_emision as string,",
+				"          semana_gestacion as integer,",
+				"          fecha_probable_parto as string,",
+				"          medico_responsable as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source4",
+				"source(output(",
+				"          empleador_id as integer,",
+				"          nit as integer,",
+				"          razon_social as string,",
+				"          tipo as string,",
+				"          nro_patronal as string,",
+				"          municipio as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source5",
+				"source(output(",
+				"          entrega_ag_id as integer,",
+				"          asignacion_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          fecha_entrega as string,",
+				"          productos as string,",
+				"          lote as string,",
+				"          peso_kg as float,",
+				"          punto_entrega as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source6",
+				"source(output(",
+				"          entrega_super_id as integer,",
+				"          asignacion_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          supermercado_id as integer,",
+				"          fecha_retiro as string,",
+				"          tipo_carne as string,",
+				"          cantidad_kg as float,",
+				"          monto_bs as float",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source7",
+				"source(output(",
+				"          supermercado_id as integer,",
+				"          cadena as string,",
+				"          sucursal as string,",
+				"          municipio as string,",
+				"          direccion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source8",
+				"source2 derive(estado = initCap(lower(estado))) ~> Tipografia",
+				"source4 derive(fecha_emision = toString(coalesce(toDate({fecha_emision}, 'yyyy-MM-dd'), toDate({fecha_emision}, 'dd/MM/yyyy'), toDate({fecha_emision}, 'MM/dd/yyyy'), toDate({fecha_emision}, 'dd-MM-yyyy')), 'dd/MM/yyyy'),",
+				"          fecha_probable_parto = toString(coalesce(toDate({fecha_probable_parto}, 'yyyy-MM-dd'), toDate({fecha_probable_parto}, 'dd/MM/yyyy'), toDate({fecha_probable_parto}, 'MM/dd/yyyy'), toDate({fecha_probable_parto}, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas2",
+				"source6 derive(ci_beneficiaria = regexReplace({ci_beneficiaria}, '[^0-9]', '')) ~> CI2",
+				"source7 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI3",
+				"source1 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI",
+				"Tipografia filter(!isNull(estado)) ~> filter1",
+				"CI derive(fecha_afiliacion = toString(coalesce(toDate(fecha_afiliacion, 'yyyy-MM-dd'), toDate(fecha_afiliacion, 'dd/MM/yyyy'), toDate(fecha_afiliacion, 'MM/dd/yyyy'), toDate(fecha_afiliacion, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas1",
+				"NormalizarFechas2 filter(!isNull(semana_gestacion)) ~> filter2",
+				"CI2 derive(fecha_entrega = toString(coalesce(toDate({fecha_entrega}, 'yyyy-MM-dd'), toDate({fecha_entrega}, 'dd/MM/yyyy'), toDate({fecha_entrega}, 'MM/dd/yyyy'), toDate({fecha_entrega}, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas",
+				"NormalizarFechas derive(punto_entrega = initCap(lower({punto_entrega}))) ~> Capitalizar",
+				"CorrecionErrores filter(!isNull(lote) && !isNull(productos) && !isNull(fecha_entrega)) ~> filter3",
+				"Capitalizar derive(productos = replace(replace(replace(replace(replace(replace(productos, 'Nutribebbé', 'Nutribebé'), 'Nuutribebé', 'Nutribebé'), 'Harian', 'Harina'), 'EMAAP', 'EMAPA'), 'Acite', 'Aceite'), 'HarinaEMAPA', 'Harina EMAPA')) ~> CorrecionErrores",
+				"CI3 derive(fecha_retiro = toString(coalesce(toDate(fecha_retiro, 'yyyy-MM-dd'), toDate(fecha_retiro, 'dd/MM/yyyy'), toDate(fecha_retiro, 'MM/dd/yyyy'), toDate(fecha_retiro, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas3",
+				"NormalizarFechas3 derive(tipo_carne = initCap(lower({tipo_carne}))) ~> Capitalizar2",
+				"Capitalizar2 filter(!isNull(tipo_carne) && !isNull(cantidad_kg)) ~> filter4",
+				"source3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1",
+				"NormalizarFechas1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink2",
+				"filter1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink3",
+				"filter2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink4",
+				"source5 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink5",
+				"filter3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink6",
+				"filter4 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink7",
+				"source8 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink8"
+			]
+		}
+	}
+}

@@ -1,0 +1,56 @@
+{
+	"name": "as_vehiculos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "BRONZE"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "vehiculos.csv",
+				"folderPath": "AGENCIA SEDEM",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "vehiculo_id",
+				"type": "String"
+			},
+			{
+				"name": "transportista_id",
+				"type": "String"
+			},
+			{
+				"name": "descripcion",
+				"type": "String"
+			},
+			{
+				"name": "placa",
+				"type": "String"
+			},
+			{
+				"name": "tipo",
+				"type": "String"
+			},
+			{
+				"name": "capacidad_kg",
+				"type": "String"
+			},
+			{
+				"name": "estado",
+				"type": "String"
+			}
+		]
+	}
+}

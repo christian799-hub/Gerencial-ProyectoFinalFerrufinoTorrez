@@ -1,0 +1,48 @@
+{
+	"name": "sup_catalogoPaquetes",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "BRONZE"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "catalogo-paquetes.csv",
+				"folderPath": "SUP",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "paquete_id",
+				"type": "String"
+			},
+			{
+				"name": "nombre",
+				"type": "String"
+			},
+			{
+				"name": "contenido",
+				"type": "String"
+			},
+			{
+				"name": "peso_estandar_kg",
+				"type": "String"
+			},
+			{
+				"name": "costo_estimado_bs",
+				"type": "String"
+			}
+		]
+	}
+}
