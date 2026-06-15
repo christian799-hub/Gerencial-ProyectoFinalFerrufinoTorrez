@@ -68,6 +68,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "sink4"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_despachos_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink5"
 				}
 			],
 			"transformations": [
@@ -103,6 +110,18 @@
 				},
 				{
 					"name": "filter2"
+				},
+				{
+					"name": "Capitalizar4"
+				},
+				{
+					"name": "NormalizarFechas3"
+				},
+				{
+					"name": "CorregirUnidadCondicion2"
+				},
+				{
+					"name": "filter3"
 				}
 			],
 			"scriptLines": [
@@ -198,6 +217,13 @@
 				"Capitalizar3 derive(unidad = case(lower(unidad) == 'cajas', 'caja', lower(unidad) == 'unidades', 'unidad', lower(unidad) == 'kilos', 'kg', lower(unidad) == 'litros', 'lt', lower(unidad)),",
 				"          condicion = case(initCap(lower({condicion})) == 'Beno', 'Bueno', initCap(lower({condicion})))) ~> CorregirUnidadCondicion",
 				"CorregirUnidadCondicion filter(!isNull(unidad) && !isNull(condicion) && !isNull(nro_guia_remision) && !isNull(responsable) && !isNull(estado)) ~> filter2",
+				"NormalizarFechas3 derive(responsable = initCap(lower(responsable)),",
+				"          estado = initCap(lower(estado))) ~> Capitalizar4",
+				"source5 derive(fecha_despacho = toString(coalesce(toDate(fecha_despacho, 'yyyy-MM-dd'), toDate(fecha_despacho, 'dd/MM/yyyy'), toDate(fecha_despacho, 'MM/dd/yyyy'), toDate(fecha_despacho, 'dd-MM-yyyy')), 'dd/MM/yyyy'),",
+				"          fecha_llegada = toString(coalesce(toDate(fecha_llegada, 'yyyy-MM-dd'), toDate(fecha_llegada, 'dd/MM/yyyy'), toDate(fecha_llegada, 'MM/dd/yyyy'), toDate(fecha_llegada, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas3",
+				"Capitalizar4 derive(estado = case(initCap(lower(estado)) == 'Deespachado', 'Despachado', lower(estado) == 'e ntránsito', 'En Tránsito', initCap(lower(estado))),",
+				"          centro_destino = replace(replace(replace(centro_destino, 'Orruo', 'Oruro'), 'lE Alto', 'El Alto'), 'Coochabamba', 'Cochabamba')) ~> CorregirUnidadCondicion2",
+				"CorregirUnidadCondicion2 filter(!isNull(centro_destino) && !isNull(fecha_llegada) && !isNull(nro_guia_remision) && !isNull(responsable) && !isNull(estado)) ~> filter3",
 				"Capitalizar2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -253,7 +279,21 @@
 				"          presion_arterial as string",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink4"
+				"     skipDuplicateMapOutputs: true) ~> sink4",
+				"filter3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink5"
 			]
 		}
 	}
