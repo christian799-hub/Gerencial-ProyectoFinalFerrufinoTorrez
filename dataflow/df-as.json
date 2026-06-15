@@ -5,14 +5,255 @@
 		"typeProperties": {
 			"sources": [
 				{
+					"dataset": {
+						"referenceName": "as_almacenes",
+						"type": "DatasetReference"
+					},
 					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_despachos",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_recepciones",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_transportistas",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_despachos",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
 				}
 			],
-			"sinks": [],
-			"transformations": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "as_almacenes_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_despachos_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_recepciones_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_transportistas_silver",
+						"type": "DatasetReference"
+					},
+					"name": "sink4"
+				}
+			],
+			"transformations": [
+				{
+					"name": "NormalizarDepartamentos"
+				},
+				{
+					"name": "CorregirEstado"
+				},
+				{
+					"name": "Capitalizar"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "Capitalizar2"
+				},
+				{
+					"name": "NormalizarFechas"
+				},
+				{
+					"name": "CorregirDept"
+				},
+				{
+					"name": "NormalizarFechas2"
+				},
+				{
+					"name": "Capitalizar3"
+				},
+				{
+					"name": "CorregirUnidadCondicion"
+				},
+				{
+					"name": "filter2"
+				}
+			],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> source1"
+				"source(output(",
+				"          almacen_id as integer,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          direccion as string,",
+				"          capacidad_m3 as float,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source(output(",
+				"          despacho_id as integer,",
+				"          recepcion_id as integer,",
+				"          nro_lote as string,",
+				"          almacen_id as integer,",
+				"          transportista_id as integer,",
+				"          vehiculo_id as integer,",
+				"          fecha_despacho as string,",
+				"          cantidad_despachada as integer,",
+				"          centro_destino as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_despacho as string,",
+				"          fecha_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source2",
+				"source(output(",
+				"          recepcion_id as integer,",
+				"          nro_lote as string,",
+				"          almacen_id as integer,",
+				"          transportista_id as integer,",
+				"          vehiculo_id as integer,",
+				"          fecha_recepcion as string,",
+				"          cantidad_recibida as integer,",
+				"          unidad as string,",
+				"          condicion as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_remision as string,",
+				"          temperatura_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source3",
+				"source(output(",
+				"          transportista_id as integer,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          contacto as string,",
+				"          telefono as integer,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source4",
+				"source(output(",
+				"          despacho_id as integer,",
+				"          recepcion_id as integer,",
+				"          nro_lote as string,",
+				"          almacen_id as integer,",
+				"          transportista_id as integer,",
+				"          vehiculo_id as integer,",
+				"          fecha_despacho as string,",
+				"          cantidad_despachada as integer,",
+				"          centro_destino as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_despacho as string,",
+				"          fecha_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source5",
+				"source1 derive(departamento = case(upper(departamento) == 'LA PAZ', 'LP', upper(departamento) == 'COCHABAMBA', 'CB', upper(departamento) == 'SANTA CRUZ', 'SC', upper(departamento) == 'ORURO', 'OR', upper(departamento) == 'POTOSI' || upper(departamento) == 'POTOSÍ', 'PT', upper(departamento) == 'TARIJA', 'TJ', upper(departamento) == 'CHUQUISACA', 'CH', upper(departamento) == 'BENI', 'BN', upper(departamento) == 'PANDO', 'PD', upper(departamento))) ~> NormalizarDepartamentos",
+				"source2 derive(estado = case(initCap(lower(estado)) == 'Deespachado', 'Despachado', lower(estado) == 'e ntránsito', 'En Tránsito', initCap(lower(estado)))) ~> CorregirEstado",
+				"CorregirEstado derive(responsable = initCap(lower(responsable))) ~> Capitalizar",
+				"CorregirDept filter(!isNull(centro_destino) && !isNull(estado) && !isNull(responsable)) ~> filter1",
+				"NormalizarDepartamentos derive(estado = initCap(lower(estado))) ~> Capitalizar2",
+				"Capitalizar derive(fecha_despacho = toString(coalesce(toDate(fecha_despacho, 'yyyy-MM-dd'), toDate(fecha_despacho, 'dd/MM/yyyy'), toDate(fecha_despacho, 'MM/dd/yyyy'), toDate(fecha_despacho, 'dd-MM-yyyy')), 'dd/MM/yyyy'),",
+				"          fecha_llegada = toString(coalesce(toDate(fecha_llegada, 'yyyy-MM-dd'), toDate(fecha_llegada, 'dd/MM/yyyy'), toDate(fecha_llegada, 'MM/dd/yyyy'), toDate(fecha_llegada, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas",
+				"NormalizarFechas derive(centro_destino = replace(replace(replace(centro_destino, 'Orruo', 'Oruro'), 'lE Alto', 'El Alto'), 'Coochabamba', 'Cochabamba')) ~> CorregirDept",
+				"source3 derive(fecha_recepcion = toString(coalesce(toDate(fecha_recepcion, 'yyyy-MM-dd'), toDate(fecha_recepcion, 'dd/MM/yyyy'), toDate(fecha_recepcion, 'MM/dd/yyyy'), toDate(fecha_recepcion, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas2",
+				"NormalizarFechas2 derive(responsable = initCap(lower(responsable)),",
+				"          estado = initCap(lower(estado))) ~> Capitalizar3",
+				"Capitalizar3 derive(unidad = case(lower(unidad) == 'cajas', 'caja', lower(unidad) == 'unidades', 'unidad', lower(unidad) == 'kilos', 'kg', lower(unidad) == 'litros', 'lt', lower(unidad)),",
+				"          condicion = case(initCap(lower({condicion})) == 'Beno', 'Bueno', initCap(lower({condicion})))) ~> CorregirUnidadCondicion",
+				"CorregirUnidadCondicion filter(!isNull(unidad) && !isNull(condicion) && !isNull(nro_guia_remision) && !isNull(responsable) && !isNull(estado)) ~> filter2",
+				"Capitalizar2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1",
+				"filter1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink2",
+				"filter2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink3",
+				"source4 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink4"
 			]
 		}
 	}
