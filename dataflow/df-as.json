@@ -34,7 +34,7 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "as_despachos",
+						"referenceName": "as_vehiculos",
 						"type": "DatasetReference"
 					},
 					"name": "source5"
@@ -50,7 +50,7 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "as_almacenes_silver1",
+						"referenceName": "as_despachos_silver1",
 						"type": "DatasetReference"
 					},
 					"name": "sink2"
@@ -71,7 +71,7 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "as_despachos_silver1",
+						"referenceName": "as_vehiculos_silver1",
 						"type": "DatasetReference"
 					},
 					"name": "sink5"
@@ -110,18 +110,6 @@
 				},
 				{
 					"name": "filter2"
-				},
-				{
-					"name": "Capitalizar4"
-				},
-				{
-					"name": "NormalizarFechas3"
-				},
-				{
-					"name": "CorregirUnidadCondicion2"
-				},
-				{
-					"name": "filter3"
 				}
 			],
 			"scriptLines": [
@@ -186,19 +174,13 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source4",
 				"source(output(",
-				"          despacho_id as integer,",
-				"          recepcion_id as integer,",
-				"          nro_lote as string,",
-				"          almacen_id as integer,",
-				"          transportista_id as integer,",
 				"          vehiculo_id as integer,",
-				"          fecha_despacho as string,",
-				"          cantidad_despachada as integer,",
-				"          centro_destino as string,",
-				"          estado as string,",
-				"          responsable as string,",
-				"          nro_guia_despacho as string,",
-				"          fecha_llegada as string",
+				"          transportista_id as integer,",
+				"          descripcion as string,",
+				"          placa as string,",
+				"          tipo as string,",
+				"          capacidad_kg as float,",
+				"          estado as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -208,22 +190,15 @@
 				"CorregirEstado derive(responsable = initCap(lower(responsable))) ~> Capitalizar",
 				"CorregirDept filter(!isNull(centro_destino) && !isNull(estado) && !isNull(responsable)) ~> filter1",
 				"NormalizarDepartamentos derive(estado = initCap(lower(estado))) ~> Capitalizar2",
-				"Capitalizar derive(fecha_despacho = toString(coalesce(toDate(fecha_despacho, 'yyyy-MM-dd'), toDate(fecha_despacho, 'dd/MM/yyyy'), toDate(fecha_despacho, 'MM/dd/yyyy'), toDate(fecha_despacho, 'dd-MM-yyyy')), 'dd/MM/yyyy'),",
-				"          fecha_llegada = toString(coalesce(toDate(fecha_llegada, 'yyyy-MM-dd'), toDate(fecha_llegada, 'dd/MM/yyyy'), toDate(fecha_llegada, 'MM/dd/yyyy'), toDate(fecha_llegada, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas",
+				"Capitalizar derive(fecha_despacho = toString(coalesce(     toDate(trim(fecha_despacho), 'yyyy-MM-dd'),     toDate(trim(fecha_despacho), 'yyyy/MM/dd'),     toDate(trim(fecha_despacho), 'dd/MM/yyyy'),     toDate(trim(fecha_despacho), 'MM/dd/yyyy'),     toDate(trim(fecha_despacho), 'dd-MM-yyyy') ), 'yyyy-MM-dd'),",
+				"          fecha_llegada = toString(coalesce(     toDate(trim(fecha_llegada), 'yyyy-MM-dd'),     toDate(trim(fecha_llegada), 'yyyy/MM/dd'),     toDate(trim(fecha_llegada), 'dd/MM/yyyy'),     toDate(trim(fecha_llegada), 'MM/dd/yyyy'),     toDate(trim(fecha_llegada), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas",
 				"NormalizarFechas derive(centro_destino = replace(replace(replace(centro_destino, 'Orruo', 'Oruro'), 'lE Alto', 'El Alto'), 'Coochabamba', 'Cochabamba')) ~> CorregirDept",
-				"source3 derive(fecha_recepcion = toString(coalesce(toDate(fecha_recepcion, 'yyyy-MM-dd'), toDate(fecha_recepcion, 'dd/MM/yyyy'), toDate(fecha_recepcion, 'MM/dd/yyyy'), toDate(fecha_recepcion, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas2",
+				"source3 derive(fecha_recepcion = toString(coalesce(     toDate(trim(fecha_recepcion), 'yyyy-MM-dd'),     toDate(trim(fecha_recepcion), 'yyyy/MM/dd'),     toDate(trim(fecha_recepcion), 'dd/MM/yyyy'),     toDate(trim(fecha_recepcion), 'MM/dd/yyyy'),     toDate(trim(fecha_recepcion), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas2",
 				"NormalizarFechas2 derive(responsable = initCap(lower(responsable)),",
 				"          estado = initCap(lower(estado))) ~> Capitalizar3",
 				"Capitalizar3 derive(unidad = case(lower(unidad) == 'cajas', 'caja', lower(unidad) == 'unidades', 'unidad', lower(unidad) == 'kilos', 'kg', lower(unidad) == 'litros', 'lt', lower(unidad)),",
 				"          condicion = case(initCap(lower({condicion})) == 'Beno', 'Bueno', initCap(lower({condicion})))) ~> CorregirUnidadCondicion",
 				"CorregirUnidadCondicion filter(!isNull(unidad) && !isNull(condicion) && !isNull(nro_guia_remision) && !isNull(responsable) && !isNull(estado)) ~> filter2",
-				"NormalizarFechas3 derive(responsable = initCap(lower(responsable)),",
-				"          estado = initCap(lower(estado))) ~> Capitalizar4",
-				"source5 derive(fecha_despacho = toString(coalesce(toDate(fecha_despacho, 'yyyy-MM-dd'), toDate(fecha_despacho, 'dd/MM/yyyy'), toDate(fecha_despacho, 'MM/dd/yyyy'), toDate(fecha_despacho, 'dd-MM-yyyy')), 'dd/MM/yyyy'),",
-				"          fecha_llegada = toString(coalesce(toDate(fecha_llegada, 'yyyy-MM-dd'), toDate(fecha_llegada, 'dd/MM/yyyy'), toDate(fecha_llegada, 'MM/dd/yyyy'), toDate(fecha_llegada, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas3",
-				"Capitalizar4 derive(estado = case(initCap(lower(estado)) == 'Deespachado', 'Despachado', lower(estado) == 'e ntránsito', 'En Tránsito', initCap(lower(estado))),",
-				"          centro_destino = replace(replace(replace(centro_destino, 'Orruo', 'Oruro'), 'lE Alto', 'El Alto'), 'Coochabamba', 'Cochabamba')) ~> CorregirUnidadCondicion2",
-				"CorregirUnidadCondicion2 filter(!isNull(centro_destino) && !isNull(fecha_llegada) && !isNull(nro_guia_despacho) && !isNull(responsable) && !isNull(estado)) ~> filter3",
 				"Capitalizar2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -243,17 +218,25 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     saveOrder: 1,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
+				"     errorHandlingOption: 'allErrors',",
+				"     transactionCommit: 'single',",
+				"     reportSuccessOnError: false) ~> sink1",
 				"filter1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
+				"          despacho_id as integer,",
+				"          recepcion_id as integer,",
+				"          nro_lote as string,",
 				"          almacen_id as integer,",
-				"          nombre as string,",
-				"          municipio as string,",
-				"          departamento as string,",
-				"          direccion as string,",
-				"          capacidad_m3 as integer,",
-				"          estado as string",
+				"          transportista_id as integer,",
+				"          vehiculo_id as integer,",
+				"          fecha_despacho as date,",
+				"          cantidad_despachada as integer,",
+				"          centro_destino as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_despacho as string,",
+				"          fecha_llegada as date",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -262,7 +245,10 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink2",
+				"     saveOrder: 4,",
+				"     errorHandlingOption: 'allErrors',",
+				"     transactionCommit: 'single',",
+				"     reportSuccessOnError: true) ~> sink2",
 				"filter2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -287,7 +273,10 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink3",
+				"     saveOrder: 3,",
+				"     errorHandlingOption: 'allErrors',",
+				"     transactionCommit: 'single',",
+				"     reportSuccessOnError: false) ~> sink3",
 				"source4 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -307,23 +296,19 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     saveOrder: 1,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink4",
-				"filter3 sink(allowSchemaDrift: true,",
+				"     errorHandlingOption: 'allErrors',",
+				"     transactionCommit: 'single',",
+				"     reportSuccessOnError: false) ~> sink4",
+				"source5 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
-				"          despacho_id as integer,",
-				"          recepcion_id as integer,",
-				"          nro_lote as string,",
-				"          almacen_id as integer,",
-				"          transportista_id as integer,",
 				"          vehiculo_id as integer,",
-				"          fecha_despacho as date,",
-				"          cantidad_despachada as integer,",
-				"          centro_destino as string,",
-				"          estado as string,",
-				"          responsable as string,",
-				"          nro_guia_despacho as string,",
-				"          fecha_llegada as date",
+				"          transportista_id as integer,",
+				"          descripcion as string,",
+				"          placa as string,",
+				"          tipo as string,",
+				"          capacidad_kg as integer,",
+				"          estado as string",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -332,7 +317,10 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink5"
+				"     saveOrder: 2,",
+				"     errorHandlingOption: 'allErrors',",
+				"     transactionCommit: 'single',",
+				"     reportSuccessOnError: false) ~> sink5"
 			]
 		}
 	}
