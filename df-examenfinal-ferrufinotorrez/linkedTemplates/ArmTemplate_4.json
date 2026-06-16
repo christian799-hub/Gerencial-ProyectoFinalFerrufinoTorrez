@@ -641,6 +641,7 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
 						"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
 						"filter2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -662,6 +663,7 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
 						"     errorHandlingOption: 'stopOnFirstError') ~> sink2",
 						"NormalizarDepartamento sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -683,6 +685,7 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
 						"     errorHandlingOption: 'stopOnFirstError') ~> sink3",
 						"nORMALIZARfECHAS3 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -701,6 +704,7 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
 						"     errorHandlingOption: 'stopOnFirstError') ~> sink4",
 						"filter3 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -721,6 +725,7 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
 						"     errorHandlingOption: 'stopOnFirstError') ~> sink5",
 						"filter4 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -741,6 +746,7 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
 						"     errorHandlingOption: 'stopOnFirstError') ~> sink6"
 					]
 				}
