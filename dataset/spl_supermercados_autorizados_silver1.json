@@ -1,0 +1,45 @@
+{
+	"name": "spl_supermercados_autorizados_silver1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "SILVER"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "supermercado_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "cadena",
+				"type": "varchar"
+			},
+			{
+				"name": "sucursal",
+				"type": "varchar"
+			},
+			{
+				"name": "municipio",
+				"type": "varchar"
+			},
+			{
+				"name": "direccion",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "spl_supermercados_autorizados_silver"
+		}
+	}
+}

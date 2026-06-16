@@ -1,0 +1,55 @@
+{
+	"name": "bja_pagos_silver1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "SILVER"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "pago_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_beneficiaria",
+				"type": "varchar"
+			},
+			{
+				"name": "concepto_pago",
+				"type": "varchar"
+			},
+			{
+				"name": "monto_bs",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "fecha_pago",
+				"type": "date"
+			},
+			{
+				"name": "estado_pago",
+				"type": "varchar"
+			},
+			{
+				"name": "canal_pago",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_comprobante",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "bja_pagos_silver"
+		}
+	}
+}

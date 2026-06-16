@@ -1,0 +1,77 @@
+{
+	"name": "as_recepciones_silver1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "SILVER"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "recepcion_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_lote",
+				"type": "varchar"
+			},
+			{
+				"name": "almacen_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "transportista_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "vehiculo_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_recepcion",
+				"type": "date"
+			},
+			{
+				"name": "cantidad_recibida",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "unidad",
+				"type": "varchar"
+			},
+			{
+				"name": "condicion",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			},
+			{
+				"name": "responsable",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_guia_remision",
+				"type": "varchar"
+			},
+			{
+				"name": "temperatura_llegada",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "as_recepciones_silver"
+		}
+	}
+}

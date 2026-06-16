@@ -1,0 +1,51 @@
+{
+	"name": "spl_certificados_medicos_silver1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "SILVER"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "certificado_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "afiliacion_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_emision",
+				"type": "date"
+			},
+			{
+				"name": "semana_gestacion",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_probable_parto",
+				"type": "date"
+			},
+			{
+				"name": "medico_responsable",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "spl_certificados_medicos_silver"
+		}
+	}
+}
