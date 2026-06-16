@@ -244,6 +244,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 3,",
 				"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
 				"source2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -261,6 +262,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
 				"     errorHandlingOption: 'stopOnFirstError') ~> sink2",
 				"NormalizarFechas2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -281,6 +283,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 2,",
 				"     errorHandlingOption: 'stopOnFirstError') ~> sink3",
 				"filter1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -324,6 +327,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
 				"     errorHandlingOption: 'stopOnFirstError') ~> sink5",
 				"Capitalizar3 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -342,6 +346,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 2,",
 				"     errorHandlingOption: 'stopOnFirstError') ~> sink6"
 			]
 		}
