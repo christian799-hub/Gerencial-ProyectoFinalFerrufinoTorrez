@@ -1,0 +1,1175 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Nombre de instancia de Data Factory",
+			"defaultValue": "df-examenfinal-ferrufinotorrez"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/spl_entregas_supermercado_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "silver"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/spl_supermercados_autorizados')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "BRONZE"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "supermercados_autorizados.csv",
+						"folderPath": "SPL",
+						"container": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "supermercado_id",
+						"type": "String"
+					},
+					{
+						"name": "cadena",
+						"type": "String"
+					},
+					{
+						"name": "sucursal",
+						"type": "String"
+					},
+					{
+						"name": "municipio",
+						"type": "String"
+					},
+					{
+						"name": "direccion",
+						"type": "String"
+					},
+					{
+						"name": "estado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/spl_supermercados_autorizados_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "silver"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_boletas')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "BRONZE"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "boletas.csv",
+						"folderPath": "SUP",
+						"container": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "boleta_id",
+						"type": "String"
+					},
+					{
+						"name": "control_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "nro_boleta",
+						"type": "String"
+					},
+					{
+						"name": "fecha_emision",
+						"type": "String"
+					},
+					{
+						"name": "estado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_boletas_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "silver"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "afiliacion_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "empleador_id",
+						"type": "String"
+					},
+					{
+						"name": "caja_id",
+						"type": "String"
+					},
+					{
+						"name": "fecha_afiliacion",
+						"type": "String"
+					},
+					{
+						"name": "nro_matricula",
+						"type": "String"
+					},
+					{
+						"name": "tipo_subsidio",
+						"type": "String"
+					},
+					{
+						"name": "estado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_catalogoPaquetes')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "BRONZE"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "catalogo-paquetes.csv",
+						"folderPath": "SUP",
+						"container": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "paquete_id",
+						"type": "String"
+					},
+					{
+						"name": "nombre",
+						"type": "String"
+					},
+					{
+						"name": "contenido",
+						"type": "String"
+					},
+					{
+						"name": "peso_estandar_kg",
+						"type": "String"
+					},
+					{
+						"name": "costo_estimado_bs",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_catalogoPaquetes_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "silver"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "afiliacion_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "empleador_id",
+						"type": "String"
+					},
+					{
+						"name": "caja_id",
+						"type": "String"
+					},
+					{
+						"name": "fecha_afiliacion",
+						"type": "String"
+					},
+					{
+						"name": "nro_matricula",
+						"type": "String"
+					},
+					{
+						"name": "tipo_subsidio",
+						"type": "String"
+					},
+					{
+						"name": "estado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_controles')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "BRONZE"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "controles.csv",
+						"folderPath": "SUP",
+						"container": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "control_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "establecimiento_id",
+						"type": "String"
+					},
+					{
+						"name": "nro_control",
+						"type": "String"
+					},
+					{
+						"name": "fecha_control",
+						"type": "String"
+					},
+					{
+						"name": "semana_gestacion",
+						"type": "String"
+					},
+					{
+						"name": "peso_madre_kg",
+						"type": "String"
+					},
+					{
+						"name": "presion_arterial",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_controles_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "silver"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "afiliacion_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "empleador_id",
+						"type": "String"
+					},
+					{
+						"name": "caja_id",
+						"type": "String"
+					},
+					{
+						"name": "fecha_afiliacion",
+						"type": "String"
+					},
+					{
+						"name": "nro_matricula",
+						"type": "String"
+					},
+					{
+						"name": "tipo_subsidio",
+						"type": "String"
+					},
+					{
+						"name": "estado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_entregas')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "BRONZE"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "entregas.csv",
+						"folderPath": "SUP",
+						"container": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "entrega_id",
+						"type": "String"
+					},
+					{
+						"name": "boleta_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "establecimiento_id",
+						"type": "String"
+					},
+					{
+						"name": "paquete_id",
+						"type": "String"
+					},
+					{
+						"name": "paquete_nombre",
+						"type": "String"
+					},
+					{
+						"name": "fecha_entrega",
+						"type": "String"
+					},
+					{
+						"name": "lote_produccion",
+						"type": "String"
+					},
+					{
+						"name": "peso_paquete_kg",
+						"type": "String"
+					},
+					{
+						"name": "fecha_proxima_entrega",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_entregas_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "silver"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "afiliacion_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "empleador_id",
+						"type": "String"
+					},
+					{
+						"name": "caja_id",
+						"type": "String"
+					},
+					{
+						"name": "fecha_afiliacion",
+						"type": "String"
+					},
+					{
+						"name": "nro_matricula",
+						"type": "String"
+					},
+					{
+						"name": "tipo_subsidio",
+						"type": "String"
+					},
+					{
+						"name": "estado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_establecimientos')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "BRONZE"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "establecimientos.csv",
+						"folderPath": "SUP",
+						"container": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "establecimiento_id",
+						"type": "String"
+					},
+					{
+						"name": "codigo_snis",
+						"type": "String"
+					},
+					{
+						"name": "nombre",
+						"type": "String"
+					},
+					{
+						"name": "tipo",
+						"type": "String"
+					},
+					{
+						"name": "nivel_atencion",
+						"type": "String"
+					},
+					{
+						"name": "municipio",
+						"type": "String"
+					},
+					{
+						"name": "departamento",
+						"type": "String"
+					},
+					{
+						"name": "red_salud",
+						"type": "String"
+					},
+					{
+						"name": "estado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_establecimientos_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "silver"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "afiliacion_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "empleador_id",
+						"type": "String"
+					},
+					{
+						"name": "caja_id",
+						"type": "String"
+					},
+					{
+						"name": "fecha_afiliacion",
+						"type": "String"
+					},
+					{
+						"name": "nro_matricula",
+						"type": "String"
+					},
+					{
+						"name": "tipo_subsidio",
+						"type": "String"
+					},
+					{
+						"name": "estado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_inscripciones')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "BRONZE"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "inscripciones.csv",
+						"folderPath": "SUP",
+						"container": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "inscripcion_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "establecimiento_id",
+						"type": "String"
+					},
+					{
+						"name": "fecha_inscripcion",
+						"type": "String"
+					},
+					{
+						"name": "semana_gestacion",
+						"type": "String"
+					},
+					{
+						"name": "estado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sup_inscripciones_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "silver"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "afiliacion_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "empleador_id",
+						"type": "String"
+					},
+					{
+						"name": "caja_id",
+						"type": "String"
+					},
+					{
+						"name": "fecha_afiliacion",
+						"type": "String"
+					},
+					{
+						"name": "nro_matricula",
+						"type": "String"
+					},
+					{
+						"name": "tipo_subsidio",
+						"type": "String"
+					},
+					{
+						"name": "estado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/as_almacenes_silver1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "almacen_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "nombre",
+						"type": "varchar"
+					},
+					{
+						"name": "municipio",
+						"type": "varchar"
+					},
+					{
+						"name": "departamento",
+						"type": "varchar"
+					},
+					{
+						"name": "direccion",
+						"type": "varchar"
+					},
+					{
+						"name": "capacidad_m3",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "estado",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "as_almacenes_silver"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/as_despachos_silver1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "despacho_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "recepcion_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "nro_lote",
+						"type": "varchar"
+					},
+					{
+						"name": "almacen_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "transportista_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "vehiculo_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "fecha_despacho",
+						"type": "date"
+					},
+					{
+						"name": "cantidad_despachada",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "centro_destino",
+						"type": "varchar"
+					},
+					{
+						"name": "estado",
+						"type": "varchar"
+					},
+					{
+						"name": "responsable",
+						"type": "varchar"
+					},
+					{
+						"name": "nro_guia_despacho",
+						"type": "varchar"
+					},
+					{
+						"name": "fecha_llegada",
+						"type": "date"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "as_despachos_silver"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/as_recepciones_silver1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "recepcion_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "nro_lote",
+						"type": "varchar"
+					},
+					{
+						"name": "almacen_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "transportista_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "vehiculo_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "fecha_recepcion",
+						"type": "date"
+					},
+					{
+						"name": "cantidad_recibida",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "unidad",
+						"type": "varchar"
+					},
+					{
+						"name": "condicion",
+						"type": "varchar"
+					},
+					{
+						"name": "estado",
+						"type": "varchar"
+					},
+					{
+						"name": "responsable",
+						"type": "varchar"
+					},
+					{
+						"name": "nro_guia_remision",
+						"type": "varchar"
+					},
+					{
+						"name": "temperatura_llegada",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "as_recepciones_silver"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/as_transportistas_silver1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "transportista_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "razon_social",
+						"type": "varchar"
+					},
+					{
+						"name": "nit",
+						"type": "varchar"
+					},
+					{
+						"name": "municipio",
+						"type": "varchar"
+					},
+					{
+						"name": "contacto",
+						"type": "varchar"
+					},
+					{
+						"name": "telefono",
+						"type": "varchar"
+					},
+					{
+						"name": "estado",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "as_transportistas_silver"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/as_vehiculos_silver1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "vehiculo_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "transportista_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "descripcion",
+						"type": "varchar"
+					},
+					{
+						"name": "placa",
+						"type": "varchar"
+					},
+					{
+						"name": "tipo",
+						"type": "varchar"
+					},
+					{
+						"name": "capacidad_kg",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "estado",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "as_vehiculos_silver"
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
