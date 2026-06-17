@@ -1,0 +1,43 @@
+{
+	"name": "df_gold_dim_beneficiaria",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sup_catalogoPaquetes_silver1",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          codigo_origen as string,",
+				"          nombre_producto as string,",
+				"          tipo_beneficio as string,",
+				"          programa as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: '-- 1. Productos del SUP\\nSELECT \\n    CAST(paquete_id AS VARCHAR(50)) AS codigo_origen, \\n    nombre AS nombre_producto, \\n    \\'Paquete Físico\\' AS tipo_beneficio, \\n    \\'SUP\\' AS programa\\nFROM sup_catalogo_paquetes_silver\\n\\nUNION ALL\\n\\n-- 2. Beneficio BJA\\nSELECT \\n    \\'BJA_B\\' AS codigo_origen, \\n    \\'Bono Juana Azurduy\\' AS nombre_producto, \\n    \\'Efectivo\\' AS tipo_beneficio, \\n    \\'BJA\\' AS programa\\n\\nUNION ALL\\n\\n-- 3. Beneficios SPL - Paquete\\nSELECT \\n    \\'SPL_P\\' AS codigo_origen, \\n    \\'Paquete Lactancia/Prenatal\\' AS nombre_producto, \\n    \\'Paquete Físico\\' AS tipo_beneficio, \\n    \\'SPL\\' AS programa\\n\\nUNION ALL\\n\\n-- 4. Beneficios SPL - Carnes\\nSELECT \\n    \\'SPL_C\\' AS codigo_origen, \\n    \\'Subsidio Carnes\\' AS nombre_producto, \\n    \\'Especie\\' AS tipo_beneficio, \\n    \\'SPL\\' AS programa',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}
