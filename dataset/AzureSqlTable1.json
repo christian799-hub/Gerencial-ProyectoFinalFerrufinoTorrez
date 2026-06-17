@@ -1,0 +1,38 @@
+{
+	"name": "AzureSqlTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "producto_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "codigo_origen",
+				"type": "varchar"
+			},
+			{
+				"name": "nombre_producto",
+				"type": "varchar"
+			},
+			{
+				"name": "tipo_beneficio",
+				"type": "varchar"
+			},
+			{
+				"name": "programa",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "dim_producto"
+		}
+	}
+}

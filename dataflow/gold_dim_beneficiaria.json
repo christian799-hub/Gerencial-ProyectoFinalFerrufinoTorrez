@@ -1,0 +1,69 @@
+{
+	"name": "gold_dim_beneficiaria",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Segip_silver_1",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dim_beneficiaria",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          ci as string,",
+				"          nombre_completo as string,",
+				"          genero as string,",
+				"          municipio_residencia as string,",
+				"          fecha_nacimiento as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT \\n    CAST(ci AS VARCHAR(50)) AS ci,\\n    CONCAT(nombres, \\' \\', apellido_paterno, \\' \\', apellido_materno) AS nombre_completo,\\n    genero,\\n    municipio_residencia,\\n    CAST(fecha_nacimiento AS DATE) AS fecha_nacimiento\\nFROM segip_silver\\nWHERE ci IS NOT NULL',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          beneficiaria_key as integer,",
+				"          ci as string,",
+				"          nombre_completo as string,",
+				"          genero as string,",
+				"          municipio_residencia as string,",
+				"          fecha_nacimiento as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ci,",
+				"          nombre_completo,",
+				"          genero,",
+				"          municipio_residencia,",
+				"          fecha_nacimiento",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

@@ -1,0 +1,83 @@
+{
+	"name": "gold_dim_tiempo",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sup_entregas_silver1",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dim_tiempo",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(fechas.fecha_movimiento AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(fechas.fecha_movimiento AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, fechas.fecha_movimiento) AS dia_semana,\\n    DATENAME(WEEKDAY, fechas.fecha_movimiento) AS nombre_dia,\\n    DAY(fechas.fecha_movimiento) AS dia_mes,\\n    MONTH(fechas.fecha_movimiento) AS mes,\\n    DATENAME(MONTH, fechas.fecha_movimiento) AS nombre_mes,\\n    DATEPART(QUARTER, fechas.fecha_movimiento) AS trimestre,\\n    YEAR(fechas.fecha_movimiento) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, fechas.fecha_movimiento) IN (1, 7) THEN 1\\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM (\\n    SELECT DISTINCT fecha_entrega AS fecha_movimiento FROM sup_entregas_silver WHERE fecha_entrega IS NOT NULL\\n    UNION\\n    SELECT DISTINCT fecha_entrega FROM spl_entregas_agencia_silver WHERE fecha_entrega IS NOT NULL\\n    UNION\\n    SELECT DISTINCT fecha_pago FROM bja_pagos_silver WHERE fecha_pago IS NOT NULL\\n) AS fechas',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as boolean",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          fecha_key,",
+				"          fecha,",
+				"          dia_semana,",
+				"          nombre_dia,",
+				"          dia_mes,",
+				"          mes,",
+				"          nombre_mes,",
+				"          trimestre,",
+				"          anio,",
+				"          es_fin_semana",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
