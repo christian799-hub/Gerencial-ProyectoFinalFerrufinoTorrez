@@ -1,0 +1,82 @@
+{
+	"name": "Segip_silver_1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "SILVER"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ci",
+				"type": "varchar"
+			},
+			{
+				"name": "nombres",
+				"type": "varchar"
+			},
+			{
+				"name": "apellido_paterno",
+				"type": "varchar"
+			},
+			{
+				"name": "apellido_materno",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_nacimiento",
+				"type": "varchar"
+			},
+			{
+				"name": "genero",
+				"type": "varchar"
+			},
+			{
+				"name": "estado_civil",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_conyuge",
+				"type": "varchar"
+			},
+			{
+				"name": "numero_hijos",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_padre",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_madre",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "profesion",
+				"type": "varchar"
+			},
+			{
+				"name": "nivel_estudios",
+				"type": "varchar"
+			},
+			{
+				"name": "municipio_residencia",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_emision",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "segip_silver"
+		}
+	}
+}
