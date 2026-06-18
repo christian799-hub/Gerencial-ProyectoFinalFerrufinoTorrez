@@ -1,0 +1,68 @@
+{
+	"name": "gold_hechos_subsidios",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "spl_entregas_agencia_silver1",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_beneficiaria",
+						"type": "DatasetReference"
+					},
+					"name": "producto"
+				},
+				{
+					"name": "source3"
+				},
+				{
+					"name": "source4"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          fecha_key as integer,",
+				"          beneficiaria_key as integer,",
+				"          punto_key as integer,",
+				"          producto_key as integer,",
+				"          cantidad as integer,",
+				"          monto_bs as decimal(10,2),",
+				"          peso_kg as decimal(8,2),",
+				"          programa_origen as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: '-- 1. Entregas SUP\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(s.fecha_entrega AS DATE), 112) AS INT) AS fecha_key,\\n    b.beneficiaria_key,\\n    p.punto_key,\\n    prod.producto_key,\\n    1 AS cantidad,\\n    0.0 AS monto_bs,\\n    s.peso_paquete_kg AS peso_kg,\\n    \\'SUP\\' AS programa_origen\\nFROM sup_entregas_silver s\\n-- Comparamos si el CI de la dimensión EMPIEZA con el CI de la tabla silver\\nLEFT JOIN gold.dim_beneficiaria b ON b.ci LIKE LTRIM(RTRIM(CAST(s.ci_beneficiaria AS VARCHAR(50)))) + \\'%\\'\\nLEFT JOIN gold.dim_punto_atencion p ON LTRIM(RTRIM(CAST(s.establecimiento_id AS VARCHAR(50)))) = LTRIM(RTRIM(CAST(p.codigo_origen AS VARCHAR(50)))) AND p.tipo_punto = \\'Centro de Salud\\'\\nLEFT JOIN gold.dim_producto prod ON LTRIM(RTRIM(CAST(s.paquete_id AS VARCHAR(50)))) = LTRIM(RTRIM(CAST(prod.codigo_origen AS VARCHAR(50)))) AND prod.programa = \\'SUP\\'\\n\\nUNION ALL\\n\\n-- 2. Entregas SPL Agencia\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(spl.fecha_entrega AS DATE), 112) AS INT) AS fecha_key,\\n    b.beneficiaria_key,\\n    -- EL CAMINO 1 ESTÁ AQUÍ: Si el JOIN da NULL por errores de tipeo, se asigna el punto \\'N/A\\'\\n    COALESCE(p.punto_key, (SELECT punto_key FROM gold.dim_punto_atencion WHERE codigo_origen = \\'N/A\\')) AS punto_key,\\n    prod.producto_key,\\n    1 AS cantidad,\\n    0.0 AS monto_bs,\\n    spl.peso_kg AS peso_kg,\\n    \\'SPL\\' AS programa_origen\\nFROM spl_entregas_agencia_silver spl\\nLEFT JOIN gold.dim_beneficiaria b ON b.ci LIKE LTRIM(RTRIM(CAST(spl.ci_beneficiaria AS VARCHAR(50)))) + \\'%\\'\\nLEFT JOIN gold.dim_punto_atencion p ON LTRIM(RTRIM(CAST(spl.punto_entrega AS VARCHAR(250)))) = LTRIM(RTRIM(CAST(p.nombre_punto AS VARCHAR(250)))) \\nLEFT JOIN gold.dim_producto prod ON LTRIM(RTRIM(CAST(prod.codigo_origen AS VARCHAR(50)))) = \\'SPL_P\\'\\n\\nUNION ALL\\n\\n-- 3. Pagos BJA\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(bja.fecha_pago AS DATE), 112) AS INT) AS fecha_key,\\n    b.beneficiaria_key,\\n    (SELECT punto_key FROM gold.dim_punto_atencion WHERE codigo_origen = \\'N/A\\') AS punto_key,\\n    prod.producto_key,\\n    0 AS cantidad,\\n    bja.monto_bs AS monto_bs,\\n    0.0 AS peso_kg,\\n    \\'BJA\\' AS programa_origen\\nFROM bja_pagos_silver bja\\nLEFT JOIN gold.dim_beneficiaria b ON b.ci LIKE LTRIM(RTRIM(CAST(bja.ci_beneficiaria AS VARCHAR(50)))) + \\'%\\'\\nLEFT JOIN gold.dim_producto prod ON LTRIM(RTRIM(CAST(prod.codigo_origen AS VARCHAR(50)))) = \\'BJA_B\\'',",
+				"     format: 'query') ~> source1",
+				"source(output(",
+				"          beneficiaria_key as integer,",
+				"          ci as string,",
+				"          nombre_completo as string,",
+				"          genero as string,",
+				"          municipio_residencia as string,",
+				"          fecha_nacimiento as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> producto",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> source3",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> source4"
+			]
+		}
+	}
+}
