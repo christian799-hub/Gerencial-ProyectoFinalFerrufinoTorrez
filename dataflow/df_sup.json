@@ -130,6 +130,15 @@
 				},
 				{
 					"name": "Capitalizar3"
+				},
+				{
+					"name": "filter2"
+				},
+				{
+					"name": "filter3"
+				},
+				{
+					"name": "filter4"
 				}
 			],
 			"scriptLines": [
@@ -221,13 +230,16 @@
 				"source5 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI3",
 				"CI3 derive(fecha_entrega = toString(coalesce(     toDate(trim(fecha_entrega), 'yyyy-MM-dd'),     toDate(trim(fecha_entrega), 'yyyy/MM/dd'),     toDate(trim(fecha_entrega), 'dd/MM/yyyy'),     toDate(trim(fecha_entrega), 'MM/dd/yyyy'),     toDate(trim(fecha_entrega), 'dd-MM-yyyy') ), 'yyyy-MM-dd'),",
 				"          fecha_proxima_entrega = toString(coalesce(     toDate(trim(fecha_proxima_entrega), 'yyyy-MM-dd'),     toDate(trim(fecha_proxima_entrega), 'yyyy/MM/dd'),     toDate(trim(fecha_proxima_entrega), 'dd/MM/yyyy'),     toDate(trim(fecha_proxima_entrega), 'MM/dd/yyyy'),     toDate(trim(fecha_proxima_entrega), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas3",
-				"NormalizarFechas3 filter(!isNull(lote_produccion)) ~> filter1",
+				"NormalizarFechas3 filter(!isNull(lote_produccion) && !isNull(fecha_entrega) && !isNull(fecha_proxima_entrega)) ~> filter1",
 				"source6 derive(estado = initCap(lower(estado))) ~> Capitalizar2",
 				"Capitalizar2 derive(departamento = case(upper(departamento) == 'LA PAZ', 'LP', upper(departamento) == 'COCHABAMBA', 'CB', upper(departamento) == 'SANTA CRUZ', 'SC', upper(departamento) == 'ORURO', 'OR', upper(departamento) == 'POTOSI' || upper(departamento) == 'POTOSÍ', 'PT', upper(departamento) == 'TARIJA', 'TJ', upper(departamento) == 'CHUQUISACA', 'CH', upper(departamento) == 'BENI', 'BN', upper(departamento) == 'PANDO', 'PD', upper(departamento))) ~> CorregirGeografia",
 				"source7 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI4",
 				"CI4 derive(fecha_inscripcion = toString(coalesce(     toDate(trim(fecha_inscripcion), 'yyyy-MM-dd'),     toDate(trim(fecha_inscripcion), 'yyyy/MM/dd'),     toDate(trim(fecha_inscripcion), 'dd/MM/yyyy'),     toDate(trim(fecha_inscripcion), 'MM/dd/yyyy'),     toDate(trim(fecha_inscripcion), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas4",
 				"NormalizarFechas4 derive(estado = initCap(lower(estado))) ~> Capitalizar3",
-				"Capitalizar sink(allowSchemaDrift: true,",
+				"Capitalizar filter(!isNull(fecha_emision)) ~> filter2",
+				"NormalizarFechas2 filter(!isNull(fecha_control)) ~> filter3",
+				"Capitalizar3 filter(!isNull(fecha_inscripcion)) ~> filter4",
+				"filter2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          boleta_id as integer,",
@@ -268,7 +280,7 @@
 				"     errorHandlingOption: 'allErrors',",
 				"     transactionCommit: 'single',",
 				"     reportSuccessOnError: false) ~> sink2",
-				"NormalizarFechas2 sink(allowSchemaDrift: true,",
+				"filter3 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          control_id as integer,",
@@ -339,7 +351,7 @@
 				"     errorHandlingOption: 'allErrors',",
 				"     transactionCommit: 'single',",
 				"     reportSuccessOnError: false) ~> sink5",
-				"Capitalizar3 sink(allowSchemaDrift: true,",
+				"filter4 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          inscripcion_id as integer,",

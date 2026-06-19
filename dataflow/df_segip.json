@@ -24,6 +24,12 @@
 			"transformations": [
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "Ci"
+				},
+				{
+					"name": "filter1"
 				}
 			],
 			"scriptLines": [
@@ -53,7 +59,9 @@
 				"    toDate(trim(fecha_nacimiento), 'yyyy-MM-dd'),\r",
 				"    toDate(trim(fecha_nacimiento), 'd/M/yyyy')\r",
 				")) ~> derivedColumn1",
-				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"derivedColumn1 derive(ci = regexReplace(ci, '[^0-9]', '')) ~> Ci",
+				"Ci filter(!isNull(fecha_nacimiento)) ~> filter1",
+				"filter1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          ci as string,",

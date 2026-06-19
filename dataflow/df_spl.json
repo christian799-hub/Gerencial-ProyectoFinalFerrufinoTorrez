@@ -164,6 +164,9 @@
 				},
 				{
 					"name": "filter4"
+				},
+				{
+					"name": "filter5"
 				}
 			],
 			"scriptLines": [
@@ -279,14 +282,15 @@
 				"source1 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI",
 				"Tipografia filter(!isNull(estado)) ~> filter1",
 				"CI derive(fecha_afiliacion = toString(coalesce(     toDate(trim(fecha_afiliacion), 'yyyy-MM-dd'),     toDate(trim(fecha_afiliacion), 'yyyy/MM/dd'),     toDate(trim(fecha_afiliacion), 'dd/MM/yyyy'),     toDate(trim(fecha_afiliacion), 'MM/dd/yyyy'),     toDate(trim(fecha_afiliacion), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas1",
-				"NormalizarFechas2 filter(!isNull(semana_gestacion)) ~> filter2",
+				"NormalizarFechas2 filter(!isNull(semana_gestacion) && !isNull(fecha_emision) && !isNull(fecha_probable_parto)) ~> filter2",
 				"CI2 derive(fecha_entrega = toString(coalesce(     toDate(trim(fecha_entrega), 'yyyy-MM-dd'),     toDate(trim(fecha_entrega), 'yyyy/MM/dd'),     toDate(trim(fecha_entrega), 'dd/MM/yyyy'),     toDate(trim(fecha_entrega), 'MM/dd/yyyy'),     toDate(trim(fecha_entrega), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas",
 				"NormalizarFechas derive(punto_entrega = initCap(lower({punto_entrega}))) ~> Capitalizar",
 				"CorrecionErrores filter(!isNull(lote) && !isNull(productos) && !isNull(fecha_entrega)) ~> filter3",
 				"Capitalizar derive(productos = replace(replace(replace(replace(replace(replace(productos, 'Nutribebbé', 'Nutribebé'), 'Nuutribebé', 'Nutribebé'), 'Harian', 'Harina'), 'EMAAP', 'EMAPA'), 'Acite', 'Aceite'), 'HarinaEMAPA', 'Harina EMAPA')) ~> CorrecionErrores",
 				"CI3 derive(fecha_retiro = toString(coalesce(     toDate(trim(fecha_retiro), 'yyyy-MM-dd'),     toDate(trim(fecha_retiro), 'yyyy/MM/dd'),     toDate(trim(fecha_retiro), 'dd/MM/yyyy'),     toDate(trim(fecha_retiro), 'MM/dd/yyyy'),     toDate(trim(fecha_retiro), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas3",
 				"NormalizarFechas3 derive(tipo_carne = initCap(lower({tipo_carne}))) ~> Capitalizar2",
-				"Capitalizar2 filter(!isNull(tipo_carne) && !isNull(cantidad_kg)) ~> filter4",
+				"Capitalizar2 filter(!isNull(tipo_carne) && !isNull(cantidad_kg) && !isNull(fecha_retiro)) ~> filter4",
+				"NormalizarFechas1 filter(!isNull(fecha_afiliacion)) ~> filter5",
 				"source3 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -305,7 +309,7 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     saveOrder: 1,",
 				"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
-				"NormalizarFechas1 sink(allowSchemaDrift: true,",
+				"filter5 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          afiliacion_id as integer,",

@@ -16,26 +16,62 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "gold_dim_beneficiaria",
+						"referenceName": "gold_dim_producto",
 						"type": "DatasetReference"
 					},
 					"name": "producto"
 				},
 				{
-					"name": "source3"
+					"dataset": {
+						"referenceName": "gold_dim_punto_atencion",
+						"type": "DatasetReference"
+					},
+					"name": "puntoAtencion"
 				},
 				{
-					"name": "source4"
+					"dataset": {
+						"referenceName": "gold_dim_beneficiaria",
+						"type": "DatasetReference"
+					},
+					"name": "beneficiaria"
 				}
 			],
-			"sinks": [],
-			"transformations": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_hechos_subsidios",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "select2"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          fecha_key as integer,",
-				"          beneficiaria_key as integer,",
-				"          punto_key as integer,",
-				"          producto_key as integer,",
+				"          ci_origen as string,",
+				"          punto_origen as string,",
+				"          tipo_punto_origen as string,",
+				"          producto_origen as string,",
 				"          cantidad as integer,",
 				"          monto_bs as decimal(10,2),",
 				"          peso_kg as decimal(8,2),",
@@ -44,8 +80,31 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: '-- 1. Entregas SUP\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(s.fecha_entrega AS DATE), 112) AS INT) AS fecha_key,\\n    b.beneficiaria_key,\\n    p.punto_key,\\n    prod.producto_key,\\n    1 AS cantidad,\\n    0.0 AS monto_bs,\\n    s.peso_paquete_kg AS peso_kg,\\n    \\'SUP\\' AS programa_origen\\nFROM sup_entregas_silver s\\n-- Comparamos si el CI de la dimensión EMPIEZA con el CI de la tabla silver\\nLEFT JOIN gold.dim_beneficiaria b ON b.ci LIKE LTRIM(RTRIM(CAST(s.ci_beneficiaria AS VARCHAR(50)))) + \\'%\\'\\nLEFT JOIN gold.dim_punto_atencion p ON LTRIM(RTRIM(CAST(s.establecimiento_id AS VARCHAR(50)))) = LTRIM(RTRIM(CAST(p.codigo_origen AS VARCHAR(50)))) AND p.tipo_punto = \\'Centro de Salud\\'\\nLEFT JOIN gold.dim_producto prod ON LTRIM(RTRIM(CAST(s.paquete_id AS VARCHAR(50)))) = LTRIM(RTRIM(CAST(prod.codigo_origen AS VARCHAR(50)))) AND prod.programa = \\'SUP\\'\\n\\nUNION ALL\\n\\n-- 2. Entregas SPL Agencia\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(spl.fecha_entrega AS DATE), 112) AS INT) AS fecha_key,\\n    b.beneficiaria_key,\\n    -- EL CAMINO 1 ESTÁ AQUÍ: Si el JOIN da NULL por errores de tipeo, se asigna el punto \\'N/A\\'\\n    COALESCE(p.punto_key, (SELECT punto_key FROM gold.dim_punto_atencion WHERE codigo_origen = \\'N/A\\')) AS punto_key,\\n    prod.producto_key,\\n    1 AS cantidad,\\n    0.0 AS monto_bs,\\n    spl.peso_kg AS peso_kg,\\n    \\'SPL\\' AS programa_origen\\nFROM spl_entregas_agencia_silver spl\\nLEFT JOIN gold.dim_beneficiaria b ON b.ci LIKE LTRIM(RTRIM(CAST(spl.ci_beneficiaria AS VARCHAR(50)))) + \\'%\\'\\nLEFT JOIN gold.dim_punto_atencion p ON LTRIM(RTRIM(CAST(spl.punto_entrega AS VARCHAR(250)))) = LTRIM(RTRIM(CAST(p.nombre_punto AS VARCHAR(250)))) \\nLEFT JOIN gold.dim_producto prod ON LTRIM(RTRIM(CAST(prod.codigo_origen AS VARCHAR(50)))) = \\'SPL_P\\'\\n\\nUNION ALL\\n\\n-- 3. Pagos BJA\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(bja.fecha_pago AS DATE), 112) AS INT) AS fecha_key,\\n    b.beneficiaria_key,\\n    (SELECT punto_key FROM gold.dim_punto_atencion WHERE codigo_origen = \\'N/A\\') AS punto_key,\\n    prod.producto_key,\\n    0 AS cantidad,\\n    bja.monto_bs AS monto_bs,\\n    0.0 AS peso_kg,\\n    \\'BJA\\' AS programa_origen\\nFROM bja_pagos_silver bja\\nLEFT JOIN gold.dim_beneficiaria b ON b.ci LIKE LTRIM(RTRIM(CAST(bja.ci_beneficiaria AS VARCHAR(50)))) + \\'%\\'\\nLEFT JOIN gold.dim_producto prod ON LTRIM(RTRIM(CAST(prod.codigo_origen AS VARCHAR(50)))) = \\'BJA_B\\'',",
+				"     query: '-- 1. Entregas SUP\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_entrega AS DATE), 112) AS INT) AS fecha_key,\\n    LTRIM(RTRIM(CAST(ci_beneficiaria AS VARCHAR(50)))) AS ci_origen,\\n    LTRIM(RTRIM(CAST(establecimiento_id AS VARCHAR(50)))) AS punto_origen,\\n    \\'Centro de Salud\\' AS tipo_punto_origen,\\n    LTRIM(RTRIM(CAST(paquete_id AS VARCHAR(50)))) AS producto_origen,\\n    1 AS cantidad,\\n    0.0 AS monto_bs,\\n    peso_paquete_kg AS peso_kg,\\n    \\'SUP\\' AS programa_origen\\nFROM sup_entregas_silver\\n\\nUNION ALL\\n\\n-- 2. Entregas SPL Agencia (CORREGIDO: Devuelve IDs numéricos para cruce directo)\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_entrega AS DATE), 112) AS INT) AS fecha_key,\\n    LTRIM(RTRIM(CAST(ci_beneficiaria AS VARCHAR(50)))) AS ci_origen,\\n    CASE \\n        WHEN punto_entrega LIKE \\'%La Paz%\\' THEN \\'1\\'\\n        WHEN punto_entrega LIKE \\'%El Alto%\\' THEN \\'2\\'\\n        WHEN (punto_entrega LIKE \\'%Cochabamba%\\' OR punto_entrega LIKE \\'%Coochabamba%\\') THEN \\'3\\'\\n        WHEN punto_entrega LIKE \\'%Santa Cruz%\\' THEN \\'4\\'\\n        WHEN punto_entrega LIKE \\'%Oruro%\\' THEN \\'5\\'\\n        WHEN punto_entrega LIKE \\'%Tarija%\\' THEN \\'6\\'\\n        WHEN punto_entrega LIKE \\'%Sucre%\\' THEN \\'7\\'\\n        WHEN punto_entrega LIKE \\'%Trinidad%\\' THEN \\'8\\'\\n        WHEN punto_entrega LIKE \\'%Cobija%\\' THEN \\'9\\'\\n        WHEN (punto_entrega LIKE \\'%Potosí%\\' OR punto_entrega LIKE \\'%Potosi%\\') THEN \\'10\\'\\n        ELSE \\'0\\' \\n    END AS punto_origen,\\n    \\'Almacén\\' AS tipo_punto_origen, \\n    \\'SPL_P\\' AS producto_origen,\\n    1 AS cantidad,\\n    0.0 AS monto_bs,\\n    peso_kg AS peso_kg,\\n    \\'SPL\\' AS programa_origen\\nFROM spl_entregas_agencia_silver\\n\\nUNION ALL\\n\\n-- 3. Entregas SPL Supermercado\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_retiro AS DATE), 112) AS INT) AS fecha_key,\\n    LTRIM(RTRIM(CAST(ci_beneficiaria AS VARCHAR(50)))) AS ci_origen,\\n    LTRIM(RTRIM(CAST(supermercado_id AS VARCHAR(50)))) AS punto_origen, \\n    \\'Supermercado\\' AS tipo_punto_origen,\\n    \\'SPL_P\\' AS producto_origen,\\n    1 AS cantidad,\\n    0.0 AS monto_bs,\\n    cantidad_kg AS peso_kg, \\n    \\'SPL\\' AS programa_origen\\nFROM spl_entregas_supermercado_silver\\n\\nUNION ALL\\n\\n-- 4. Pagos BJA\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_pago AS DATE), 112) AS INT) AS fecha_key,\\n    LTRIM(RTRIM(CAST(ci_beneficiaria AS VARCHAR(50)))) AS ci_origen,\\n    \\'N/A\\' AS punto_origen,\\n    \\'Canal Digital / Banco\\' AS tipo_punto_origen,\\n    \\'BJA_B\\' AS producto_origen,\\n    0 AS cantidad,\\n    monto_bs AS monto_bs,\\n    0.0 AS peso_kg,\\n    \\'BJA\\' AS programa_origen\\nFROM bja_pagos_silver',",
 				"     format: 'query') ~> source1",
+				"source(output(",
+				"          producto_key as integer,",
+				"          codigo_origen as string,",
+				"          nombre_producto as string,",
+				"          tipo_beneficio as string,",
+				"          programa as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> producto",
+				"source(output(",
+				"          punto_key as integer,",
+				"          codigo_origen as string,",
+				"          nombre_punto as string,",
+				"          tipo_punto as string,",
+				"          municipio as string,",
+				"          departamento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> puntoAtencion",
 				"source(output(",
 				"          beneficiaria_key as integer,",
 				"          ci as string,",
@@ -57,11 +116,79 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> producto",
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> source3",
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> source4"
+				"     format: 'table') ~> beneficiaria",
+				"source1, producto join(producto_origen == codigo_origen,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, derivedColumn1 join(punto_origen == dim_codigo_limpio",
+				"     && tipo_punto_origen == tipo_punto,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"puntoAtencion derive(dim_codigo_limpio = trim(upper(toString(codigo_origen)))) ~> derivedColumn1",
+				"join2 select(mapColumn(",
+				"          fecha_key,",
+				"          ci_origen,",
+				"          cantidad,",
+				"          monto_bs,",
+				"          peso_kg,",
+				"          programa_origen,",
+				"          producto_key,",
+				"          punto_key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1, beneficiaria join(ci_origen == ci,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3 select(mapColumn(",
+				"          fecha_key,",
+				"          cantidad,",
+				"          monto_bs,",
+				"          peso_kg,",
+				"          programa_origen,",
+				"          producto_key,",
+				"          punto_key,",
+				"          beneficiaria_key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          hecho_key as integer,",
+				"          fecha_key as integer,",
+				"          beneficiaria_key as integer,",
+				"          punto_key as integer,",
+				"          producto_key as integer,",
+				"          cantidad as integer,",
+				"          monto_bs as decimal(18,2),",
+				"          peso_kg as decimal(18,2),",
+				"          programa_origen as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          fecha_key,",
+				"          beneficiaria_key,",
+				"          punto_key,",
+				"          producto_key,",
+				"          cantidad,",
+				"          monto_bs,",
+				"          peso_kg,",
+				"          programa_origen",
+				"     )) ~> sink1"
 			]
 		}
 	}

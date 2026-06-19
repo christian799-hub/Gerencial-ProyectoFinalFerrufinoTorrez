@@ -151,6 +151,9 @@
 				},
 				{
 					"name": "filter4"
+				},
+				{
+					"name": "filter5"
 				}
 			],
 			"scriptLines": [
@@ -245,11 +248,11 @@
 				"CI derive(fecha_control = toString(coalesce(     toDate(trim(fecha_control), 'yyyy-MM-dd'),     toDate(trim(fecha_control), 'yyyy/MM/dd'),     toDate(trim(fecha_control), 'dd/MM/yyyy'),     toDate(trim(fecha_control), 'MM/dd/yyyy'),     toDate(trim(fecha_control), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas",
 				"NormalizarFechas derive(resultado = initCap(lower(resultado)),",
 				"          vacuna_aplicada = initCap(lower(vacuna_aplicada))) ~> Capitalizar",
-				"Capitalizar filter(!isNull(vacuna_aplicada) && !isNull(resultado)) ~> filter1",
+				"Capitalizar filter(!isNull(vacuna_aplicada) && !isNull(resultado) && !isNull(fecha_control)) ~> filter1",
 				"source2 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI2",
 				"CI2 derive(fecha_control = toString(coalesce(     toDate(trim(fecha_control), 'yyyy-MM-dd'),     toDate(trim(fecha_control), 'yyyy/MM/dd'),     toDate(trim(fecha_control), 'dd/MM/yyyy'),     toDate(trim(fecha_control), 'MM/dd/yyyy'),     toDate(trim(fecha_control), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas2",
 				"NormalizarFechas2 derive(resultado = initCap(lower(resultado))) ~> Capitalizar2",
-				"Capitalizar2 filter(!isNull(resultado)) ~> filter2",
+				"Capitalizar2 filter(!isNull(resultado) && !isNull(fecha_control)) ~> filter2",
 				"source3 derive(departamento = case(upper({departamento}) == 'LA PAZ', 'LP', upper({departamento}) == 'COCHABAMBA', 'CB', upper({departamento}) == 'SANTA CRUZ', 'SC', upper({departamento}) == 'ORURO', 'OR', upper({departamento}) == 'POTOSI' || upper({departamento}) == 'POTOSÍ', 'PT', upper({departamento}) == 'TARIJA', 'TJ', upper({departamento}) == 'CHUQUISACA', 'CH', upper({departamento}) == 'BENI', 'BN', upper({departamento}) == 'PANDO', 'PD', upper({departamento}))) ~> NormalizarDepartamento",
 				"source4 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI3",
 				"CI3 derive(fecha_inscripcion = toString(coalesce(     toDate(trim(fecha_inscripcion), 'yyyy-MM-dd'),     toDate(trim(fecha_inscripcion), 'yyyy/MM/dd'),     toDate(trim(fecha_inscripcion), 'dd/MM/yyyy'),     toDate(trim(fecha_inscripcion), 'MM/dd/yyyy'),     toDate(trim(fecha_inscripcion), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> nORMALIZARfECHAS3",
@@ -257,13 +260,14 @@
 				"CI4 derive(fecha_pago = toString(coalesce(     toDate(trim(fecha_pago), 'yyyy-MM-dd'),     toDate(trim(fecha_pago), 'yyyy/MM/dd'),     toDate(trim(fecha_pago), 'dd/MM/yyyy'),     toDate(trim(fecha_pago), 'MM/dd/yyyy'),     toDate(trim(fecha_pago), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas4",
 				"NormalizarFechas4 derive(canal_pago = initCap(lower(canal_pago)),",
 				"          estado_pago = initCap(lower(estado_pago))) ~> Capitalizar3",
-				"Capitalizar3 filter(!isNull(nro_comprobante)) ~> filter3",
+				"Capitalizar3 filter(!isNull(nro_comprobante) && !isNull(fecha_pago)) ~> filter3",
 				"source6 derive(ci_recien_nacido = regexReplace(ci_recien_nacido, '[^0-9]', ''),",
 				"          ci_madre = regexReplace(ci_madre, '[^0-9]', '')) ~> CI5",
 				"CI5 derive(fecha_parto = toString(coalesce(toDate(fecha_parto, 'yyyy-MM-dd'), toDate(fecha_parto, 'dd/MM/yyyy'), toDate(fecha_parto, 'MM/dd/yyyy'), toDate(fecha_parto, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas5",
 				"NormalizarFechas5 derive(tipo_parto = initCap(lower(tipo_parto))) ~> Capitalizar4",
 				"Capitalizar4 derive(tipo_parto = case(     initCap(lower(tipo_parto)) == 'Cessárea' || initCap(lower(tipo_parto)) == 'Cesárae' || initCap(lower(tipo_parto)) == 'Cesárrea', 'Cesárea',     initCap(lower(tipo_parto)) == 'Nattural' || initCap(lower(tipo_parto)) == 'Naturl', 'Natural',     initCap(lower(tipo_parto)) )) ~> Corregir",
-				"Corregir filter(!isNull(tipo_parto)) ~> filter4",
+				"Corregir filter(!isNull(tipo_parto) && !isNull(fecha_parto)) ~> filter4",
+				"nORMALIZARfECHAS3 filter(!isNull(fecha_inscripcion)) ~> filter5",
 				"filter1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -331,7 +335,7 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     saveOrder: 1,",
 				"     errorHandlingOption: 'stopOnFirstError') ~> sink3",
-				"nORMALIZARfECHAS3 sink(allowSchemaDrift: true,",
+				"filter5 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          inscripcion_id as integer,",
