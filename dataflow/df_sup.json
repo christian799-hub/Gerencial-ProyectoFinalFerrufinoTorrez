@@ -279,7 +279,7 @@
 				"     saveOrder: 1,",
 				"     errorHandlingOption: 'allErrors',",
 				"     transactionCommit: 'single',",
-				"     reportSuccessOnError: false) ~> sink2",
+				"     reportSuccessOnError: true) ~> sink2",
 				"filter3 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
