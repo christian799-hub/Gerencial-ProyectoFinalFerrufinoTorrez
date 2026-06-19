@@ -139,6 +139,241 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ETL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Producto",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Script1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_gold_dim_producto",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Punto_Atencion",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Producto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_gold_dim_punto_atencion",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Beneficiaria",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Punto_Atencion",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "gold_dim_beneficiaria",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Tiempo",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Beneficiaria",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "gold_dim_tiempo",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Hechos",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Tiempo",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "gold_hechos_subsidios",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"producto": {},
+									"puntoAtencion": {},
+									"beneficiaria": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Script1",
+						"type": "Script",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "AzureSqlDatabase1",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "NonQuery",
+									"text": "DELETE FROM gold.dim_beneficiaria\nDELETE FROM gold.dim_punto_atencion\nDELETE FROM gold.dim_producto\nDELETE FROM gold.hechos_subsidios\nDELETE FROM gold.dim_tiempo"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_gold_dim_producto')]",
+				"[concat(variables('factoryId'), '/dataflows/df_gold_dim_punto_atencion')]",
+				"[concat(variables('factoryId'), '/dataflows/gold_dim_beneficiaria')]",
+				"[concat(variables('factoryId'), '/dataflows/gold_dim_tiempo')]",
+				"[concat(variables('factoryId'), '/dataflows/gold_hechos_subsidios')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pipelineSPL')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -301,6 +536,49 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTable1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "producto_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "codigo_origen",
+						"type": "varchar"
+					},
+					{
+						"name": "nombre_producto",
+						"type": "varchar"
+					},
+					{
+						"name": "tipo_beneficio",
+						"type": "varchar"
+					},
+					{
+						"name": "programa",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "dim_producto"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Segip')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -394,6 +672,93 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Segip_silver_1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ci",
+						"type": "varchar"
+					},
+					{
+						"name": "nombres",
+						"type": "varchar"
+					},
+					{
+						"name": "apellido_paterno",
+						"type": "varchar"
+					},
+					{
+						"name": "apellido_materno",
+						"type": "varchar"
+					},
+					{
+						"name": "fecha_nacimiento",
+						"type": "varchar"
+					},
+					{
+						"name": "genero",
+						"type": "varchar"
+					},
+					{
+						"name": "estado_civil",
+						"type": "varchar"
+					},
+					{
+						"name": "ci_conyuge",
+						"type": "varchar"
+					},
+					{
+						"name": "numero_hijos",
+						"type": "varchar"
+					},
+					{
+						"name": "ci_padre",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ci_madre",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "profesion",
+						"type": "varchar"
+					},
+					{
+						"name": "nivel_estudios",
+						"type": "varchar"
+					},
+					{
+						"name": "municipio_residencia",
+						"type": "varchar"
+					},
+					{
+						"name": "fecha_emision",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "segip_silver"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/as_almacenes')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -446,69 +811,6 @@
 					},
 					{
 						"name": "estado",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/as_almacenes_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "control_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "establecimiento_id",
-						"type": "String"
-					},
-					{
-						"name": "nro_control",
-						"type": "String"
-					},
-					{
-						"name": "fecha_control",
-						"type": "String"
-					},
-					{
-						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "peso_madre_kg",
-						"type": "String"
-					},
-					{
-						"name": "presion_arterial",
 						"type": "String"
 					}
 				]
@@ -649,69 +951,6 @@
 					},
 					{
 						"name": "fecha_llegada",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/as_despachos_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "control_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "establecimiento_id",
-						"type": "String"
-					},
-					{
-						"name": "nro_control",
-						"type": "String"
-					},
-					{
-						"name": "fecha_control",
-						"type": "String"
-					},
-					{
-						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "peso_madre_kg",
-						"type": "String"
-					},
-					{
-						"name": "presion_arterial",
 						"type": "String"
 					}
 				]
@@ -889,69 +1128,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/as_recepciones_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "control_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "establecimiento_id",
-						"type": "String"
-					},
-					{
-						"name": "nro_control",
-						"type": "String"
-					},
-					{
-						"name": "fecha_control",
-						"type": "String"
-					},
-					{
-						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "peso_madre_kg",
-						"type": "String"
-					},
-					{
-						"name": "presion_arterial",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/as_recepciones_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1095,69 +1271,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/as_transportistas_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "control_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "establecimiento_id",
-						"type": "String"
-					},
-					{
-						"name": "nro_control",
-						"type": "String"
-					},
-					{
-						"name": "fecha_control",
-						"type": "String"
-					},
-					{
-						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "peso_madre_kg",
-						"type": "String"
-					},
-					{
-						"name": "presion_arterial",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/as_transportistas_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1264,69 +1377,6 @@
 					},
 					{
 						"name": "estado",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/as_vehiculos_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "control_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "establecimiento_id",
-						"type": "String"
-					},
-					{
-						"name": "nro_control",
-						"type": "String"
-					},
-					{
-						"name": "fecha_control",
-						"type": "String"
-					},
-					{
-						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "peso_madre_kg",
-						"type": "String"
-					},
-					{
-						"name": "presion_arterial",
 						"type": "String"
 					}
 				]
@@ -1456,69 +1506,6 @@
 					},
 					{
 						"name": "resultado",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/bja_controles_pediatricos_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "control_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "establecimiento_id",
-						"type": "String"
-					},
-					{
-						"name": "nro_control",
-						"type": "String"
-					},
-					{
-						"name": "fecha_control",
-						"type": "String"
-					},
-					{
-						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "peso_madre_kg",
-						"type": "String"
-					},
-					{
-						"name": "presion_arterial",
 						"type": "String"
 					}
 				]
@@ -1669,69 +1656,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/bja_controles_prenatales_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "control_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "establecimiento_id",
-						"type": "String"
-					},
-					{
-						"name": "nro_control",
-						"type": "String"
-					},
-					{
-						"name": "fecha_control",
-						"type": "String"
-					},
-					{
-						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "peso_madre_kg",
-						"type": "String"
-					},
-					{
-						"name": "presion_arterial",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/bja_controles_prenatales_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1868,69 +1792,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/bja_establecimientos_salud_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "control_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "establecimiento_id",
-						"type": "String"
-					},
-					{
-						"name": "nro_control",
-						"type": "String"
-					},
-					{
-						"name": "fecha_control",
-						"type": "String"
-					},
-					{
-						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "peso_madre_kg",
-						"type": "String"
-					},
-					{
-						"name": "presion_arterial",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/bja_establecimientos_salud_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -2050,69 +1911,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/bja_inscripciones_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "control_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "establecimiento_id",
-						"type": "String"
-					},
-					{
-						"name": "nro_control",
-						"type": "String"
-					},
-					{
-						"name": "fecha_control",
-						"type": "String"
-					},
-					{
-						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "peso_madre_kg",
-						"type": "String"
-					},
-					{
-						"name": "presion_arterial",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/bja_inscripciones_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -2221,69 +2019,6 @@
 					},
 					{
 						"name": "nro_comprobante",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/bja_pagos_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "control_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "establecimiento_id",
-						"type": "String"
-					},
-					{
-						"name": "nro_control",
-						"type": "String"
-					},
-					{
-						"name": "fecha_control",
-						"type": "String"
-					},
-					{
-						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "peso_madre_kg",
-						"type": "String"
-					},
-					{
-						"name": "presion_arterial",
 						"type": "String"
 					}
 				]
@@ -2418,69 +2153,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/bja_partos_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "control_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "establecimiento_id",
-						"type": "String"
-					},
-					{
-						"name": "nro_control",
-						"type": "String"
-					},
-					{
-						"name": "fecha_control",
-						"type": "String"
-					},
-					{
-						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "peso_madre_kg",
-						"type": "String"
-					},
-					{
-						"name": "presion_arterial",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/bja_partos_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -2544,33 +2216,453 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/segip_silver')]",
+			"name": "[concat(parameters('factoryName'), '/dim_beneficiaria')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "beneficiaria_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ci",
+						"type": "varchar"
+					},
+					{
+						"name": "nombre_completo",
+						"type": "varchar"
+					},
+					{
+						"name": "genero",
+						"type": "varchar"
+					},
+					{
+						"name": "municipio_residencia",
+						"type": "varchar"
+					},
+					{
+						"name": "fecha_nacimiento",
+						"type": "date"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "dim_beneficiaria"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dim_punto_atencion')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "punto_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "codigo_origen",
+						"type": "varchar"
+					},
+					{
+						"name": "nombre_punto",
+						"type": "varchar"
+					},
+					{
+						"name": "tipo_punto",
+						"type": "varchar"
+					},
+					{
+						"name": "municipio",
+						"type": "varchar"
+					},
+					{
+						"name": "departamento",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "dim_punto_atencion"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dim_tiempo')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "fecha_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "fecha",
+						"type": "date"
+					},
+					{
+						"name": "dia_semana",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "nombre_dia",
+						"type": "varchar"
+					},
+					{
+						"name": "dia_mes",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "mes",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "nombre_mes",
+						"type": "varchar"
+					},
+					{
+						"name": "trimestre",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "anio",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "es_fin_semana",
+						"type": "bit"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "dim_tiempo"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_dim_beneficiaria')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
-					"name": "SILVER"
+					"name": "GOLD"
 				},
 				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "beneficiaria_key",
+						"type": "int",
+						"precision": 10
 					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
+					{
+						"name": "ci",
+						"type": "varchar"
+					},
+					{
+						"name": "nombre_completo",
+						"type": "varchar"
+					},
+					{
+						"name": "genero",
+						"type": "varchar"
+					},
+					{
+						"name": "municipio_residencia",
+						"type": "varchar"
+					},
+					{
+						"name": "fecha_nacimiento",
+						"type": "date"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "dim_beneficiaria"
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_dim_producto')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "GOLD"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "producto_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "codigo_origen",
+						"type": "varchar"
+					},
+					{
+						"name": "nombre_producto",
+						"type": "varchar"
+					},
+					{
+						"name": "tipo_beneficio",
+						"type": "varchar"
+					},
+					{
+						"name": "programa",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "dim_producto"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_dim_punto_atencion')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "GOLD"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "punto_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "codigo_origen",
+						"type": "varchar"
+					},
+					{
+						"name": "nombre_punto",
+						"type": "varchar"
+					},
+					{
+						"name": "tipo_punto",
+						"type": "varchar"
+					},
+					{
+						"name": "municipio",
+						"type": "varchar"
+					},
+					{
+						"name": "departamento",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "dim_punto_atencion"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_dim_tiempo')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "GOLD"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "fecha_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "fecha",
+						"type": "date"
+					},
+					{
+						"name": "dia_semana",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "nombre_dia",
+						"type": "varchar"
+					},
+					{
+						"name": "dia_mes",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "mes",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "nombre_mes",
+						"type": "varchar"
+					},
+					{
+						"name": "trimestre",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "anio",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "es_fin_semana",
+						"type": "bit"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "dim_tiempo"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_hechos_subsidios')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "GOLD"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "hecho_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "fecha_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "beneficiaria_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "punto_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "producto_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "cantidad",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "monto_bs",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "peso_kg",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "programa_origen",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "hechos_subsidios"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
 			]
 		},
 		{
@@ -2633,36 +2725,6 @@
 						"type": "String"
 					}
 				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/spl_afiliaciones_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
@@ -2794,36 +2856,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/spl_asignaciones_mensuales_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/spl_asignaciones_mensuales_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -2944,36 +2976,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/spl_cajas_salud_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/spl_cajas_salud_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3075,36 +3077,6 @@
 						"type": "String"
 					}
 				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/spl_certificados_medicos_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
@@ -3224,36 +3196,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/spl_empleadores_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/spl_empleadores_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3363,36 +3305,6 @@
 						"type": "String"
 					}
 				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/spl_entregas_agencia_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
@@ -3525,36 +3437,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/spl_entregas_supermercado_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/spl_entregas_supermercado_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3676,36 +3558,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/spl_supermercados_autorizados_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/spl_supermercados_autorizados_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3800,69 +3652,6 @@
 					},
 					{
 						"name": "fecha_emision",
-						"type": "String"
-					},
-					{
-						"name": "estado",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/sup_boletas_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "afiliacion_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "empleador_id",
-						"type": "String"
-					},
-					{
-						"name": "caja_id",
-						"type": "String"
-					},
-					{
-						"name": "fecha_afiliacion",
-						"type": "String"
-					},
-					{
-						"name": "nro_matricula",
-						"type": "String"
-					},
-					{
-						"name": "tipo_subsidio",
 						"type": "String"
 					},
 					{
@@ -3980,69 +3769,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/sup_catalogoPaquetes_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "afiliacion_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "empleador_id",
-						"type": "String"
-					},
-					{
-						"name": "caja_id",
-						"type": "String"
-					},
-					{
-						"name": "fecha_afiliacion",
-						"type": "String"
-					},
-					{
-						"name": "nro_matricula",
-						"type": "String"
-					},
-					{
-						"name": "tipo_subsidio",
-						"type": "String"
-					},
-					{
-						"name": "estado",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/sup_catalogoPaquetes_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -4149,69 +3875,6 @@
 					},
 					{
 						"name": "presion_arterial",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/sup_controles_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "afiliacion_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "empleador_id",
-						"type": "String"
-					},
-					{
-						"name": "caja_id",
-						"type": "String"
-					},
-					{
-						"name": "fecha_afiliacion",
-						"type": "String"
-					},
-					{
-						"name": "nro_matricula",
-						"type": "String"
-					},
-					{
-						"name": "tipo_subsidio",
-						"type": "String"
-					},
-					{
-						"name": "estado",
 						"type": "String"
 					}
 				]
@@ -4348,69 +4011,6 @@
 					},
 					{
 						"name": "fecha_proxima_entrega",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/sup_entregas_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "afiliacion_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "empleador_id",
-						"type": "String"
-					},
-					{
-						"name": "caja_id",
-						"type": "String"
-					},
-					{
-						"name": "fecha_afiliacion",
-						"type": "String"
-					},
-					{
-						"name": "nro_matricula",
-						"type": "String"
-					},
-					{
-						"name": "tipo_subsidio",
-						"type": "String"
-					},
-					{
-						"name": "estado",
 						"type": "String"
 					}
 				]
@@ -4560,69 +4160,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/sup_establecimientos_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "afiliacion_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "empleador_id",
-						"type": "String"
-					},
-					{
-						"name": "caja_id",
-						"type": "String"
-					},
-					{
-						"name": "fecha_afiliacion",
-						"type": "String"
-					},
-					{
-						"name": "nro_matricula",
-						"type": "String"
-					},
-					{
-						"name": "tipo_subsidio",
-						"type": "String"
-					},
-					{
-						"name": "estado",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/sup_establecimientos_silver1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -4729,69 +4266,6 @@
 					},
 					{
 						"name": "semana_gestacion",
-						"type": "String"
-					},
-					{
-						"name": "estado",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/sup_inscripciones_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "SILVER"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "silver"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "afiliacion_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "empleador_id",
-						"type": "String"
-					},
-					{
-						"name": "caja_id",
-						"type": "String"
-					},
-					{
-						"name": "fecha_afiliacion",
-						"type": "String"
-					},
-					{
-						"name": "nro_matricula",
-						"type": "String"
-					},
-					{
-						"name": "tipo_subsidio",
 						"type": "String"
 					},
 					{
@@ -4937,7 +4411,7 @@
 						},
 						{
 							"dataset": {
-								"referenceName": "as_despachos",
+								"referenceName": "as_vehiculos",
 								"type": "DatasetReference"
 							},
 							"name": "source5"
@@ -4953,7 +4427,7 @@
 						},
 						{
 							"dataset": {
-								"referenceName": "as_almacenes_silver1",
+								"referenceName": "as_despachos_silver1",
 								"type": "DatasetReference"
 							},
 							"name": "sink2"
@@ -4974,7 +4448,7 @@
 						},
 						{
 							"dataset": {
-								"referenceName": "as_despachos_silver1",
+								"referenceName": "as_vehiculos_silver1",
 								"type": "DatasetReference"
 							},
 							"name": "sink5"
@@ -5013,18 +4487,6 @@
 						},
 						{
 							"name": "filter2"
-						},
-						{
-							"name": "Capitalizar4"
-						},
-						{
-							"name": "NormalizarFechas3"
-						},
-						{
-							"name": "CorregirUnidadCondicion2"
-						},
-						{
-							"name": "filter3"
 						}
 					],
 					"scriptLines": [
@@ -5089,19 +4551,13 @@
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false) ~> source4",
 						"source(output(",
-						"          despacho_id as integer,",
-						"          recepcion_id as integer,",
-						"          nro_lote as string,",
-						"          almacen_id as integer,",
-						"          transportista_id as integer,",
 						"          vehiculo_id as integer,",
-						"          fecha_despacho as string,",
-						"          cantidad_despachada as integer,",
-						"          centro_destino as string,",
-						"          estado as string,",
-						"          responsable as string,",
-						"          nro_guia_despacho as string,",
-						"          fecha_llegada as string",
+						"          transportista_id as integer,",
+						"          descripcion as string,",
+						"          placa as string,",
+						"          tipo as string,",
+						"          capacidad_kg as float,",
+						"          estado as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -5109,24 +4565,19 @@
 						"source1 derive(departamento = case(upper(departamento) == 'LA PAZ', 'LP', upper(departamento) == 'COCHABAMBA', 'CB', upper(departamento) == 'SANTA CRUZ', 'SC', upper(departamento) == 'ORURO', 'OR', upper(departamento) == 'POTOSI' || upper(departamento) == 'POTOSÍ', 'PT', upper(departamento) == 'TARIJA', 'TJ', upper(departamento) == 'CHUQUISACA', 'CH', upper(departamento) == 'BENI', 'BN', upper(departamento) == 'PANDO', 'PD', upper(departamento))) ~> NormalizarDepartamentos",
 						"source2 derive(estado = case(initCap(lower(estado)) == 'Deespachado', 'Despachado', lower(estado) == 'e ntránsito', 'En Tránsito', initCap(lower(estado)))) ~> CorregirEstado",
 						"CorregirEstado derive(responsable = initCap(lower(responsable))) ~> Capitalizar",
-						"CorregirDept filter(!isNull(centro_destino) && !isNull(estado) && !isNull(responsable)) ~> filter1",
+						"CorregirDept filter(!isNull(centro_destino) && !isNull(estado) && !isNull(responsable)",
+						"&& !isNull(fecha_despacho) && !isNull(fecha_llegada)) ~> filter1",
 						"NormalizarDepartamentos derive(estado = initCap(lower(estado))) ~> Capitalizar2",
-						"Capitalizar derive(fecha_despacho = toString(coalesce(toDate(fecha_despacho, 'yyyy-MM-dd'), toDate(fecha_despacho, 'dd/MM/yyyy'), toDate(fecha_despacho, 'MM/dd/yyyy'), toDate(fecha_despacho, 'dd-MM-yyyy')), 'dd/MM/yyyy'),",
-						"          fecha_llegada = toString(coalesce(toDate(fecha_llegada, 'yyyy-MM-dd'), toDate(fecha_llegada, 'dd/MM/yyyy'), toDate(fecha_llegada, 'MM/dd/yyyy'), toDate(fecha_llegada, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas",
+						"Capitalizar derive(fecha_despacho = toString(coalesce(     toDate(trim(fecha_despacho), 'yyyy-MM-dd'),     toDate(trim(fecha_despacho), 'yyyy/MM/dd'),     toDate(trim(fecha_despacho), 'dd/MM/yyyy'),     toDate(trim(fecha_despacho), 'MM/dd/yyyy'),     toDate(trim(fecha_despacho), 'dd-MM-yyyy') ), 'yyyy-MM-dd'),",
+						"          fecha_llegada = toString(coalesce(     toDate(trim(fecha_llegada), 'yyyy-MM-dd'),     toDate(trim(fecha_llegada), 'yyyy/MM/dd'),     toDate(trim(fecha_llegada), 'dd/MM/yyyy'),     toDate(trim(fecha_llegada), 'MM/dd/yyyy'),     toDate(trim(fecha_llegada), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas",
 						"NormalizarFechas derive(centro_destino = replace(replace(replace(centro_destino, 'Orruo', 'Oruro'), 'lE Alto', 'El Alto'), 'Coochabamba', 'Cochabamba')) ~> CorregirDept",
-						"source3 derive(fecha_recepcion = toString(coalesce(toDate(fecha_recepcion, 'yyyy-MM-dd'), toDate(fecha_recepcion, 'dd/MM/yyyy'), toDate(fecha_recepcion, 'MM/dd/yyyy'), toDate(fecha_recepcion, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas2",
+						"source3 derive(fecha_recepcion = toString(coalesce(     toDate(trim(fecha_recepcion), 'yyyy-MM-dd'),     toDate(trim(fecha_recepcion), 'yyyy/MM/dd'),     toDate(trim(fecha_recepcion), 'dd/MM/yyyy'),     toDate(trim(fecha_recepcion), 'MM/dd/yyyy'),     toDate(trim(fecha_recepcion), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas2",
 						"NormalizarFechas2 derive(responsable = initCap(lower(responsable)),",
 						"          estado = initCap(lower(estado))) ~> Capitalizar3",
 						"Capitalizar3 derive(unidad = case(lower(unidad) == 'cajas', 'caja', lower(unidad) == 'unidades', 'unidad', lower(unidad) == 'kilos', 'kg', lower(unidad) == 'litros', 'lt', lower(unidad)),",
 						"          condicion = case(initCap(lower({condicion})) == 'Beno', 'Bueno', initCap(lower({condicion})))) ~> CorregirUnidadCondicion",
-						"CorregirUnidadCondicion filter(!isNull(unidad) && !isNull(condicion) && !isNull(nro_guia_remision) && !isNull(responsable) && !isNull(estado)) ~> filter2",
-						"NormalizarFechas3 derive(responsable = initCap(lower(responsable)),",
-						"          estado = initCap(lower(estado))) ~> Capitalizar4",
-						"source5 derive(fecha_despacho = toString(coalesce(toDate(fecha_despacho, 'yyyy-MM-dd'), toDate(fecha_despacho, 'dd/MM/yyyy'), toDate(fecha_despacho, 'MM/dd/yyyy'), toDate(fecha_despacho, 'dd-MM-yyyy')), 'dd/MM/yyyy'),",
-						"          fecha_llegada = toString(coalesce(toDate(fecha_llegada, 'yyyy-MM-dd'), toDate(fecha_llegada, 'dd/MM/yyyy'), toDate(fecha_llegada, 'MM/dd/yyyy'), toDate(fecha_llegada, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas3",
-						"Capitalizar4 derive(estado = case(initCap(lower(estado)) == 'Deespachado', 'Despachado', lower(estado) == 'e ntránsito', 'En Tránsito', initCap(lower(estado))),",
-						"          centro_destino = replace(replace(replace(centro_destino, 'Orruo', 'Oruro'), 'lE Alto', 'El Alto'), 'Coochabamba', 'Cochabamba')) ~> CorregirUnidadCondicion2",
-						"CorregirUnidadCondicion2 filter(!isNull(centro_destino) && !isNull(fecha_llegada) && !isNull(nro_guia_despacho) && !isNull(responsable) && !isNull(estado)) ~> filter3",
+						"CorregirUnidadCondicion filter(!isNull(unidad) && !isNull(condicion) && !isNull(nro_guia_remision) && !isNull(responsable) && !isNull(estado)",
+						"&& !isNull(fecha_recepcion)) ~> filter2",
 						"Capitalizar2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -5146,17 +4597,25 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 1,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink1",
 						"filter1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
+						"          despacho_id as integer,",
+						"          recepcion_id as integer,",
+						"          nro_lote as string,",
 						"          almacen_id as integer,",
-						"          nombre as string,",
-						"          municipio as string,",
-						"          departamento as string,",
-						"          direccion as string,",
-						"          capacidad_m3 as integer,",
-						"          estado as string",
+						"          transportista_id as integer,",
+						"          vehiculo_id as integer,",
+						"          fecha_despacho as date,",
+						"          cantidad_despachada as integer,",
+						"          centro_destino as string,",
+						"          estado as string,",
+						"          responsable as string,",
+						"          nro_guia_despacho as string,",
+						"          fecha_llegada as date",
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
@@ -5165,7 +4624,10 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink2",
+						"     saveOrder: 4,",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: true) ~> sink2",
 						"filter2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -5190,7 +4652,10 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink3",
+						"     saveOrder: 3,",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink3",
 						"source4 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -5210,23 +4675,19 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 1,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink4",
-						"filter3 sink(allowSchemaDrift: true,",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink4",
+						"source5 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
-						"          despacho_id as integer,",
-						"          recepcion_id as integer,",
-						"          nro_lote as string,",
-						"          almacen_id as integer,",
-						"          transportista_id as integer,",
 						"          vehiculo_id as integer,",
-						"          fecha_despacho as date,",
-						"          cantidad_despachada as integer,",
-						"          centro_destino as string,",
-						"          estado as string,",
-						"          responsable as string,",
-						"          nro_guia_despacho as string,",
-						"          fecha_llegada as date",
+						"          transportista_id as integer,",
+						"          descripcion as string,",
+						"          placa as string,",
+						"          tipo as string,",
+						"          capacidad_kg as integer,",
+						"          estado as string",
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
@@ -5235,7 +4696,10 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink5"
+						"     saveOrder: 2,",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink5"
 					]
 				}
 			},
@@ -5244,10 +4708,12 @@
 				"[concat(variables('factoryId'), '/datasets/as_despachos')]",
 				"[concat(variables('factoryId'), '/datasets/as_recepciones')]",
 				"[concat(variables('factoryId'), '/datasets/as_transportistas')]",
+				"[concat(variables('factoryId'), '/datasets/as_vehiculos')]",
 				"[concat(variables('factoryId'), '/datasets/as_almacenes_silver1')]",
+				"[concat(variables('factoryId'), '/datasets/as_despachos_silver1')]",
 				"[concat(variables('factoryId'), '/datasets/as_recepciones_silver1')]",
 				"[concat(variables('factoryId'), '/datasets/as_transportistas_silver1')]",
-				"[concat(variables('factoryId'), '/datasets/as_despachos_silver1')]"
+				"[concat(variables('factoryId'), '/datasets/as_vehiculos_silver1')]"
 			]
 		},
 		{
@@ -5405,6 +4871,9 @@
 						},
 						{
 							"name": "filter4"
+						},
+						{
+							"name": "filter5"
 						}
 					],
 					"scriptLines": [
@@ -5474,7 +4943,7 @@
 						"          fecha_pago as string,",
 						"          estado_pago as string,",
 						"          canal_pago as string,",
-						"          nro_comprobante as integer",
+						"          nro_comprobante as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -5496,28 +4965,29 @@
 						"     partitionBy('hash', 1)) ~> source6",
 						"source1 derive(ci_nino = regexReplace(ci_nino, '[^0-9]', ''),",
 						"          ci_madre = regexReplace(ci_madre, '[^0-9]', '')) ~> CI",
-						"CI derive(fecha_control = toString(coalesce(toDate({fecha_control}, 'yyyy-MM-dd'), toDate({fecha_control}, 'dd/MM/yyyy'), toDate({fecha_control}, 'MM/dd/yyyy'), toDate({fecha_control}, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas",
+						"CI derive(fecha_control = toString(coalesce(     toDate(trim(fecha_control), 'yyyy-MM-dd'),     toDate(trim(fecha_control), 'yyyy/MM/dd'),     toDate(trim(fecha_control), 'dd/MM/yyyy'),     toDate(trim(fecha_control), 'MM/dd/yyyy'),     toDate(trim(fecha_control), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas",
 						"NormalizarFechas derive(resultado = initCap(lower(resultado)),",
 						"          vacuna_aplicada = initCap(lower(vacuna_aplicada))) ~> Capitalizar",
-						"Capitalizar filter(!isNull(vacuna_aplicada) && !isNull(resultado)) ~> filter1",
+						"Capitalizar filter(!isNull(vacuna_aplicada) && !isNull(resultado) && !isNull(fecha_control)) ~> filter1",
 						"source2 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI2",
-						"CI2 derive(fecha_control = toString(coalesce(toDate(fecha_control, 'yyyy-MM-dd'), toDate(fecha_control, 'dd/MM/yyyy'), toDate(fecha_control, 'MM/dd/yyyy'), toDate(fecha_control, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas2",
+						"CI2 derive(fecha_control = toString(coalesce(     toDate(trim(fecha_control), 'yyyy-MM-dd'),     toDate(trim(fecha_control), 'yyyy/MM/dd'),     toDate(trim(fecha_control), 'dd/MM/yyyy'),     toDate(trim(fecha_control), 'MM/dd/yyyy'),     toDate(trim(fecha_control), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas2",
 						"NormalizarFechas2 derive(resultado = initCap(lower(resultado))) ~> Capitalizar2",
-						"Capitalizar2 filter(!isNull(resultado)) ~> filter2",
+						"Capitalizar2 filter(!isNull(resultado) && !isNull(fecha_control)) ~> filter2",
 						"source3 derive(departamento = case(upper({departamento}) == 'LA PAZ', 'LP', upper({departamento}) == 'COCHABAMBA', 'CB', upper({departamento}) == 'SANTA CRUZ', 'SC', upper({departamento}) == 'ORURO', 'OR', upper({departamento}) == 'POTOSI' || upper({departamento}) == 'POTOSÍ', 'PT', upper({departamento}) == 'TARIJA', 'TJ', upper({departamento}) == 'CHUQUISACA', 'CH', upper({departamento}) == 'BENI', 'BN', upper({departamento}) == 'PANDO', 'PD', upper({departamento}))) ~> NormalizarDepartamento",
 						"source4 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI3",
-						"CI3 derive(fecha_inscripcion = toString(coalesce(toDate(fecha_inscripcion, 'yyyy-MM-dd'), toDate(fecha_inscripcion, 'dd/MM/yyyy'), toDate(fecha_inscripcion, 'MM/dd/yyyy'), toDate(fecha_inscripcion, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> nORMALIZARfECHAS3",
+						"CI3 derive(fecha_inscripcion = toString(coalesce(     toDate(trim(fecha_inscripcion), 'yyyy-MM-dd'),     toDate(trim(fecha_inscripcion), 'yyyy/MM/dd'),     toDate(trim(fecha_inscripcion), 'dd/MM/yyyy'),     toDate(trim(fecha_inscripcion), 'MM/dd/yyyy'),     toDate(trim(fecha_inscripcion), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> nORMALIZARfECHAS3",
 						"source5 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI4",
-						"CI4 derive(fecha_pago = toString(coalesce(toDate(fecha_pago, 'yyyy-MM-dd'), toDate(fecha_pago, 'dd/MM/yyyy'), toDate(fecha_pago, 'MM/dd/yyyy'), toDate(fecha_pago, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas4",
+						"CI4 derive(fecha_pago = toString(coalesce(     toDate(trim(fecha_pago), 'yyyy-MM-dd'),     toDate(trim(fecha_pago), 'yyyy/MM/dd'),     toDate(trim(fecha_pago), 'dd/MM/yyyy'),     toDate(trim(fecha_pago), 'MM/dd/yyyy'),     toDate(trim(fecha_pago), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas4",
 						"NormalizarFechas4 derive(canal_pago = initCap(lower(canal_pago)),",
 						"          estado_pago = initCap(lower(estado_pago))) ~> Capitalizar3",
-						"Capitalizar3 filter(!isNull(nro_comprobante)) ~> filter3",
+						"Capitalizar3 filter(!isNull(nro_comprobante) && !isNull(fecha_pago)) ~> filter3",
 						"source6 derive(ci_recien_nacido = regexReplace(ci_recien_nacido, '[^0-9]', ''),",
 						"          ci_madre = regexReplace(ci_madre, '[^0-9]', '')) ~> CI5",
 						"CI5 derive(fecha_parto = toString(coalesce(toDate(fecha_parto, 'yyyy-MM-dd'), toDate(fecha_parto, 'dd/MM/yyyy'), toDate(fecha_parto, 'MM/dd/yyyy'), toDate(fecha_parto, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas5",
 						"NormalizarFechas5 derive(tipo_parto = initCap(lower(tipo_parto))) ~> Capitalizar4",
 						"Capitalizar4 derive(tipo_parto = case(     initCap(lower(tipo_parto)) == 'Cessárea' || initCap(lower(tipo_parto)) == 'Cesárae' || initCap(lower(tipo_parto)) == 'Cesárrea', 'Cesárea',     initCap(lower(tipo_parto)) == 'Nattural' || initCap(lower(tipo_parto)) == 'Naturl', 'Natural',     initCap(lower(tipo_parto)) )) ~> Corregir",
-						"Corregir filter(!isNull(tipo_parto)) ~> filter4",
+						"Corregir filter(!isNull(tipo_parto) && !isNull(fecha_parto)) ~> filter4",
+						"nORMALIZARfECHAS3 filter(!isNull(fecha_inscripcion)) ~> filter5",
 						"filter1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -5585,7 +5055,7 @@
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 1,",
 						"     errorHandlingOption: 'stopOnFirstError') ~> sink3",
-						"nORMALIZARfECHAS3 sink(allowSchemaDrift: true,",
+						"filter5 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          inscripcion_id as integer,",
@@ -5624,7 +5094,9 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 2,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink5",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink5",
 						"filter4 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -5665,6 +5137,153 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/df_gold_dim_producto')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "sup_catalogoPaquetes_silver1",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "AzureSqlTable1",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          codigo_origen as string,",
+						"          nombre_producto as string,",
+						"          tipo_beneficio as string,",
+						"          programa as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: '-- 1. Productos del SUP\\nSELECT \\n    CAST(paquete_id AS VARCHAR(50)) AS codigo_origen, \\n    nombre AS nombre_producto, \\n    \\'Paquete Físico\\' AS tipo_beneficio, \\n    \\'SUP\\' AS programa\\nFROM sup_catalogo_paquetes_silver\\n\\nUNION ALL\\n\\n-- 2. Beneficio BJA\\nSELECT \\n    \\'BJA_B\\' AS codigo_origen, \\n    \\'Bono Juana Azurduy\\' AS nombre_producto, \\n    \\'Efectivo\\' AS tipo_beneficio, \\n    \\'BJA\\' AS programa\\n\\nUNION ALL\\n\\n-- 3. Beneficios SPL - Paquete\\nSELECT \\n    \\'SPL_P\\' AS codigo_origen, \\n    \\'Paquete Lactancia/Prenatal\\' AS nombre_producto, \\n    \\'Paquete Físico\\' AS tipo_beneficio, \\n    \\'SPL\\' AS programa\\n\\nUNION ALL\\n\\n-- 4. Beneficios SPL - Carnes\\nSELECT \\n    \\'SPL_C\\' AS codigo_origen, \\n    \\'Subsidio Carnes\\' AS nombre_producto, \\n    \\'Especie\\' AS tipo_beneficio, \\n    \\'SPL\\' AS programa',",
+						"     format: 'query') ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          producto_key as integer,",
+						"          codigo_origen as string,",
+						"          nombre_producto as string,",
+						"          tipo_beneficio as string,",
+						"          programa as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          codigo_origen,",
+						"          nombre_producto,",
+						"          tipo_beneficio,",
+						"          programa",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/sup_catalogoPaquetes_silver1')]",
+				"[concat(variables('factoryId'), '/datasets/AzureSqlTable1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_gold_dim_punto_atencion')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "as_almacenes_silver1",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "dim_punto_atencion",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          codigo_origen as string,",
+						"          nombre_punto as string,",
+						"          tipo_punto as string,",
+						"          municipio as string,",
+						"          departamento as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: '-- 1. Almacenes\\nSELECT \\n    CAST(almacen_id AS VARCHAR(50)) AS codigo_origen, \\n    nombre AS nombre_punto, \\n    \\'Almacén\\' AS tipo_punto, \\n    municipio, \\n    departamento\\nFROM as_almacenes_silver\\n\\nUNION ALL\\n\\n-- 2. Establecimientos de Salud\\nSELECT \\n    CAST(establecimiento_id AS VARCHAR(50)) AS codigo_origen, \\n    nombre AS nombre_punto, \\n    \\'Centro de Salud\\' AS tipo_punto, \\n    municipio, \\n    departamento\\nFROM bja_establecimientos_salud_silver\\n\\nUNION ALL\\n\\n-- 3. Supermercados\\nSELECT \\n    CAST(supermercado_id AS VARCHAR(50)) AS codigo_origen, \\n    cadena AS nombre_punto, \\n    \\'Supermercado\\' AS tipo_punto, \\n    municipio, \\n    \\'N/A\\' AS departamento\\nFROM spl_supermercados_autorizados_silver\\n\\nUNION ALL\\n\\n-- 4. Registro por defecto (Canal Digital / Banco) convertido a SELECT\\nSELECT \\n    \\'N/A\\' AS codigo_origen, \\n    \\'Canal Digital / Banco\\' AS nombre_punto, \\n    \\'Virtual\\' AS tipo_punto, \\n    \\'N/A\\' AS municipio, \\n    \\'N/A\\' AS departamento',",
+						"     format: 'query') ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          punto_key as integer,",
+						"          codigo_origen as string,",
+						"          nombre_punto as string,",
+						"          tipo_punto as string,",
+						"          municipio as string,",
+						"          departamento as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          codigo_origen,",
+						"          nombre_punto,",
+						"          tipo_punto,",
+						"          municipio,",
+						"          departamento",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/as_almacenes_silver1')]",
+				"[concat(variables('factoryId'), '/datasets/dim_punto_atencion')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_segip')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -5683,16 +5302,56 @@
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "segip_silver",
+								"referenceName": "Segip_silver_1",
 								"type": "DatasetReference"
 							},
 							"name": "sink1"
 						}
 					],
-					"transformations": [],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "Ci"
+						},
+						{
+							"name": "filter1"
+						}
+					],
 					"scriptLines": [
 						"source(output(",
-						"          ci as integer,",
+						"          ci as string,",
+						"          nombres as string,",
+						"          apellido_paterno as string,",
+						"          apellido_materno as string,",
+						"          fecha_nacimiento as string,",
+						"          genero as string,",
+						"          estado_civil as string,",
+						"          ci_conyuge as string,",
+						"          numero_hijos as string,",
+						"          ci_padre as string,",
+						"          ci_madre as string,",
+						"          profesion as string,",
+						"          nivel_estudios as string,",
+						"          municipio_residencia as string,",
+						"          fecha_emision as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     partitionBy('hash', 1)) ~> source1",
+						"source1 derive(fecha_nacimiento = coalesce(\r",
+						"    toDate(trim(fecha_nacimiento), 'dd/MM/yyyy'), \r",
+						"    toDate(trim(fecha_nacimiento), 'yyyy-MM-dd'),\r",
+						"    toDate(trim(fecha_nacimiento), 'd/M/yyyy')\r",
+						")) ~> derivedColumn1",
+						"derivedColumn1 derive(ci = regexReplace(ci, '[^0-9]', '')) ~> Ci",
+						"Ci filter(!isNull(fecha_nacimiento)) ~> filter1",
+						"filter1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ci as string,",
 						"          nombres as string,",
 						"          apellido_paterno as string,",
 						"          apellido_materno as string,",
@@ -5708,20 +5367,21 @@
 						"          municipio_residencia as string,",
 						"          fecha_emision as string",
 						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     partitionBy('hash', 1)) ~> source1",
-						"source1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     recreate:true,",
+						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sink1"
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 					]
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/Segip')]",
-				"[concat(variables('factoryId'), '/datasets/segip_silver')]"
+				"[concat(variables('factoryId'), '/datasets/Segip_silver_1')]"
 			]
 		},
 		{
@@ -5892,6 +5552,9 @@
 						},
 						{
 							"name": "filter4"
+						},
+						{
+							"name": "filter5"
 						}
 					],
 					"scriptLines": [
@@ -6000,21 +5663,22 @@
 						"     ignoreNoFilesFound: false,",
 						"     partitionBy('hash', 1)) ~> source8",
 						"source2 derive(estado = initCap(lower(estado))) ~> Tipografia",
-						"source4 derive(fecha_emision = toString(coalesce(toDate({fecha_emision}, 'yyyy-MM-dd'), toDate({fecha_emision}, 'dd/MM/yyyy'), toDate({fecha_emision}, 'MM/dd/yyyy'), toDate({fecha_emision}, 'dd-MM-yyyy')), 'dd/MM/yyyy'),",
-						"          fecha_probable_parto = toString(coalesce(toDate({fecha_probable_parto}, 'yyyy-MM-dd'), toDate({fecha_probable_parto}, 'dd/MM/yyyy'), toDate({fecha_probable_parto}, 'MM/dd/yyyy'), toDate({fecha_probable_parto}, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas2",
+						"source4 derive(fecha_emision = toString(coalesce(     toDate(trim(fecha_emision), 'yyyy-MM-dd'),     toDate(trim(fecha_emision), 'yyyy/MM/dd'),     toDate(trim(fecha_emision), 'dd/MM/yyyy'),     toDate(trim(fecha_emision), 'MM/dd/yyyy'),     toDate(trim(fecha_emision), 'dd-MM-yyyy') ), 'yyyy-MM-dd'),",
+						"          fecha_probable_parto = toString(coalesce(     toDate(trim(fecha_probable_parto), 'yyyy-MM-dd'),     toDate(trim(fecha_probable_parto), 'yyyy/MM/dd'),     toDate(trim(fecha_probable_parto), 'dd/MM/yyyy'),     toDate(trim(fecha_probable_parto), 'MM/dd/yyyy'),     toDate(trim(fecha_probable_parto), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas2",
 						"source6 derive(ci_beneficiaria = regexReplace({ci_beneficiaria}, '[^0-9]', '')) ~> CI2",
 						"source7 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI3",
 						"source1 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI",
 						"Tipografia filter(!isNull(estado)) ~> filter1",
-						"CI derive(fecha_afiliacion = toString(coalesce(toDate(fecha_afiliacion, 'yyyy-MM-dd'), toDate(fecha_afiliacion, 'dd/MM/yyyy'), toDate(fecha_afiliacion, 'MM/dd/yyyy'), toDate(fecha_afiliacion, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas1",
-						"NormalizarFechas2 filter(!isNull(semana_gestacion)) ~> filter2",
-						"CI2 derive(fecha_entrega = toString(coalesce(toDate({fecha_entrega}, 'yyyy-MM-dd'), toDate({fecha_entrega}, 'dd/MM/yyyy'), toDate({fecha_entrega}, 'MM/dd/yyyy'), toDate({fecha_entrega}, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas",
+						"CI derive(fecha_afiliacion = toString(coalesce(     toDate(trim(fecha_afiliacion), 'yyyy-MM-dd'),     toDate(trim(fecha_afiliacion), 'yyyy/MM/dd'),     toDate(trim(fecha_afiliacion), 'dd/MM/yyyy'),     toDate(trim(fecha_afiliacion), 'MM/dd/yyyy'),     toDate(trim(fecha_afiliacion), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas1",
+						"NormalizarFechas2 filter(!isNull(semana_gestacion) && !isNull(fecha_emision) && !isNull(fecha_probable_parto)) ~> filter2",
+						"CI2 derive(fecha_entrega = toString(coalesce(     toDate(trim(fecha_entrega), 'yyyy-MM-dd'),     toDate(trim(fecha_entrega), 'yyyy/MM/dd'),     toDate(trim(fecha_entrega), 'dd/MM/yyyy'),     toDate(trim(fecha_entrega), 'MM/dd/yyyy'),     toDate(trim(fecha_entrega), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas",
 						"NormalizarFechas derive(punto_entrega = initCap(lower({punto_entrega}))) ~> Capitalizar",
 						"CorrecionErrores filter(!isNull(lote) && !isNull(productos) && !isNull(fecha_entrega)) ~> filter3",
 						"Capitalizar derive(productos = replace(replace(replace(replace(replace(replace(productos, 'Nutribebbé', 'Nutribebé'), 'Nuutribebé', 'Nutribebé'), 'Harian', 'Harina'), 'EMAAP', 'EMAPA'), 'Acite', 'Aceite'), 'HarinaEMAPA', 'Harina EMAPA')) ~> CorrecionErrores",
-						"CI3 derive(fecha_retiro = toString(coalesce(toDate(fecha_retiro, 'yyyy-MM-dd'), toDate(fecha_retiro, 'dd/MM/yyyy'), toDate(fecha_retiro, 'MM/dd/yyyy'), toDate(fecha_retiro, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas3",
+						"CI3 derive(fecha_retiro = toString(coalesce(     toDate(trim(fecha_retiro), 'yyyy-MM-dd'),     toDate(trim(fecha_retiro), 'yyyy/MM/dd'),     toDate(trim(fecha_retiro), 'dd/MM/yyyy'),     toDate(trim(fecha_retiro), 'MM/dd/yyyy'),     toDate(trim(fecha_retiro), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas3",
 						"NormalizarFechas3 derive(tipo_carne = initCap(lower({tipo_carne}))) ~> Capitalizar2",
-						"Capitalizar2 filter(!isNull(tipo_carne) && !isNull(cantidad_kg)) ~> filter4",
+						"Capitalizar2 filter(!isNull(tipo_carne) && !isNull(cantidad_kg) && !isNull(fecha_retiro)) ~> filter4",
+						"NormalizarFechas1 filter(!isNull(fecha_afiliacion)) ~> filter5",
 						"source3 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -6033,7 +5697,7 @@
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 1,",
 						"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
-						"NormalizarFechas1 sink(allowSchemaDrift: true,",
+						"filter5 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          afiliacion_id as integer,",
@@ -6074,7 +5738,9 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 3,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink3",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink3",
 						"filter2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -6113,7 +5779,9 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 1,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink5",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink5",
 						"filter3 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -6134,7 +5802,9 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 4,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink6",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: true) ~> sink6",
 						"filter4 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -6155,7 +5825,9 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 4,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink7",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: true) ~> sink7",
 						"source8 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -6174,7 +5846,9 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 1,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink8"
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink8"
 					]
 				}
 			},
@@ -6331,6 +6005,15 @@
 						},
 						{
 							"name": "Capitalizar3"
+						},
+						{
+							"name": "filter2"
+						},
+						{
+							"name": "filter3"
+						},
+						{
+							"name": "filter4"
 						}
 					],
 					"scriptLines": [
@@ -6415,20 +6098,23 @@
 						"     ignoreNoFilesFound: false,",
 						"     partitionBy('hash', 1)) ~> source7",
 						"source1 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI",
-						"CI derive(fecha_emision = toString(coalesce(toDate(fecha_emision, 'yyyy-MM-dd'), toDate(fecha_emision, 'dd/MM/yyyy'), toDate(fecha_emision, 'MM/dd/yyyy'), toDate(fecha_emision, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas",
+						"CI derive(fecha_emision = toString(coalesce(     toDate(trim(fecha_emision), 'yyyy-MM-dd'),     toDate(trim(fecha_emision), 'yyyy/MM/dd'),     toDate(trim(fecha_emision), 'dd/MM/yyyy'),     toDate(trim(fecha_emision), 'MM/dd/yyyy'),     toDate(trim(fecha_emision), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas",
 						"NormalizarFechas derive(estado = initCap(lower(estado))) ~> Capitalizar",
 						"source3 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI2",
-						"CI2 derive(fecha_control = toString(coalesce(toDate(fecha_control, 'yyyy-MM-dd'), toDate(fecha_control, 'dd/MM/yyyy'), toDate(fecha_control, 'MM/dd/yyyy'), toDate(fecha_control, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas2",
+						"CI2 derive(fecha_control = toString(coalesce(     toDate(trim(fecha_control), 'yyyy-MM-dd'),     toDate(trim(fecha_control), 'yyyy/MM/dd'),     toDate(trim(fecha_control), 'dd/MM/yyyy'),     toDate(trim(fecha_control), 'MM/dd/yyyy'),     toDate(trim(fecha_control), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas2",
 						"source5 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI3",
-						"CI3 derive(fecha_entrega = toString(coalesce(toDate(fecha_entrega, 'yyyy-MM-dd'), toDate(fecha_entrega, 'dd/MM/yyyy'), toDate(fecha_entrega, 'MM/dd/yyyy'), toDate(fecha_entrega, 'dd-MM-yyyy')), 'dd/MM/yyyy'),",
-						"          fecha_proxima_entrega = toString(coalesce(toDate(fecha_proxima_entrega, 'yyyy-MM-dd'), toDate(fecha_proxima_entrega, 'dd/MM/yyyy'), toDate(fecha_proxima_entrega, 'MM/dd/yyyy'), toDate(fecha_proxima_entrega, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas3",
-						"NormalizarFechas3 filter(!isNull(lote_produccion)) ~> filter1",
+						"CI3 derive(fecha_entrega = toString(coalesce(     toDate(trim(fecha_entrega), 'yyyy-MM-dd'),     toDate(trim(fecha_entrega), 'yyyy/MM/dd'),     toDate(trim(fecha_entrega), 'dd/MM/yyyy'),     toDate(trim(fecha_entrega), 'MM/dd/yyyy'),     toDate(trim(fecha_entrega), 'dd-MM-yyyy') ), 'yyyy-MM-dd'),",
+						"          fecha_proxima_entrega = toString(coalesce(     toDate(trim(fecha_proxima_entrega), 'yyyy-MM-dd'),     toDate(trim(fecha_proxima_entrega), 'yyyy/MM/dd'),     toDate(trim(fecha_proxima_entrega), 'dd/MM/yyyy'),     toDate(trim(fecha_proxima_entrega), 'MM/dd/yyyy'),     toDate(trim(fecha_proxima_entrega), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas3",
+						"NormalizarFechas3 filter(!isNull(lote_produccion) && !isNull(fecha_entrega) && !isNull(fecha_proxima_entrega)) ~> filter1",
 						"source6 derive(estado = initCap(lower(estado))) ~> Capitalizar2",
 						"Capitalizar2 derive(departamento = case(upper(departamento) == 'LA PAZ', 'LP', upper(departamento) == 'COCHABAMBA', 'CB', upper(departamento) == 'SANTA CRUZ', 'SC', upper(departamento) == 'ORURO', 'OR', upper(departamento) == 'POTOSI' || upper(departamento) == 'POTOSÍ', 'PT', upper(departamento) == 'TARIJA', 'TJ', upper(departamento) == 'CHUQUISACA', 'CH', upper(departamento) == 'BENI', 'BN', upper(departamento) == 'PANDO', 'PD', upper(departamento))) ~> CorregirGeografia",
 						"source7 derive(ci_beneficiaria = regexReplace(ci_beneficiaria, '[^0-9]', '')) ~> CI4",
-						"CI4 derive(fecha_inscripcion = toString(coalesce(toDate(fecha_inscripcion, 'yyyy-MM-dd'), toDate(fecha_inscripcion, 'dd/MM/yyyy'), toDate(fecha_inscripcion, 'MM/dd/yyyy'), toDate(fecha_inscripcion, 'dd-MM-yyyy')), 'dd/MM/yyyy')) ~> NormalizarFechas4",
+						"CI4 derive(fecha_inscripcion = toString(coalesce(     toDate(trim(fecha_inscripcion), 'yyyy-MM-dd'),     toDate(trim(fecha_inscripcion), 'yyyy/MM/dd'),     toDate(trim(fecha_inscripcion), 'dd/MM/yyyy'),     toDate(trim(fecha_inscripcion), 'MM/dd/yyyy'),     toDate(trim(fecha_inscripcion), 'dd-MM-yyyy') ), 'yyyy-MM-dd')) ~> NormalizarFechas4",
 						"NormalizarFechas4 derive(estado = initCap(lower(estado))) ~> Capitalizar3",
-						"Capitalizar sink(allowSchemaDrift: true,",
+						"Capitalizar filter(!isNull(fecha_emision)) ~> filter2",
+						"NormalizarFechas2 filter(!isNull(fecha_control)) ~> filter3",
+						"Capitalizar3 filter(!isNull(fecha_inscripcion)) ~> filter4",
+						"filter2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          boleta_id as integer,",
@@ -6446,7 +6132,9 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 3,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink1",
 						"source2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -6464,8 +6152,10 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 1,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink2",
-						"NormalizarFechas2 sink(allowSchemaDrift: true,",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: true) ~> sink2",
+						"filter3 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          control_id as integer,",
@@ -6485,7 +6175,9 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 2,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink3",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink3",
 						"filter1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -6507,7 +6199,9 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink4",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink4",
 						"CorregirGeografia sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -6529,8 +6223,10 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 1,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink5",
-						"Capitalizar3 sink(allowSchemaDrift: true,",
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink5",
+						"filter4 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          inscripcion_id as integer,",
@@ -6548,7 +6244,9 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 2,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink6"
+						"     errorHandlingOption: 'allErrors',",
+						"     transactionCommit: 'single',",
+						"     reportSuccessOnError: false) ~> sink6"
 					]
 				}
 			},
@@ -6565,6 +6263,461 @@
 				"[concat(variables('factoryId'), '/datasets/sup_entregas_silver1')]",
 				"[concat(variables('factoryId'), '/datasets/sup_establecimientos_silver1')]",
 				"[concat(variables('factoryId'), '/datasets/sup_inscripciones_silver1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_dim_beneficiaria')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Segip_silver_1",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "dim_beneficiaria",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          ci as string,",
+						"          nombre_completo as string,",
+						"          genero as string,",
+						"          municipio_residencia as string,",
+						"          fecha_nacimiento as date",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT DISTINCT \\n    CAST(ci AS VARCHAR(50)) AS ci,\\n    CONCAT(nombres, \\' \\', apellido_paterno, \\' \\', apellido_materno) AS nombre_completo,\\n    genero,\\n    municipio_residencia,\\n    CAST(fecha_nacimiento AS DATE) AS fecha_nacimiento\\nFROM segip_silver\\nWHERE ci IS NOT NULL',",
+						"     format: 'query') ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          beneficiaria_key as integer,",
+						"          ci as string,",
+						"          nombre_completo as string,",
+						"          genero as string,",
+						"          municipio_residencia as string,",
+						"          fecha_nacimiento as date",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          ci,",
+						"          nombre_completo,",
+						"          genero,",
+						"          municipio_residencia,",
+						"          fecha_nacimiento",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Segip_silver_1')]",
+				"[concat(variables('factoryId'), '/datasets/dim_beneficiaria')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_dim_tiempo')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "sup_entregas_silver1",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "dim_tiempo",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          fecha_key as integer,",
+						"          fecha as date,",
+						"          dia_semana as integer,",
+						"          nombre_dia as string,",
+						"          dia_mes as integer,",
+						"          mes as integer,",
+						"          nombre_mes as string,",
+						"          trimestre as integer,",
+						"          anio as integer,",
+						"          es_fin_semana as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(fechas.fecha_movimiento AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(fechas.fecha_movimiento AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, fechas.fecha_movimiento) AS dia_semana,\\n    DATENAME(WEEKDAY, fechas.fecha_movimiento) AS nombre_dia,\\n    DAY(fechas.fecha_movimiento) AS dia_mes,\\n    MONTH(fechas.fecha_movimiento) AS mes,\\n    DATENAME(MONTH, fechas.fecha_movimiento) AS nombre_mes,\\n    DATEPART(QUARTER, fechas.fecha_movimiento) AS trimestre,\\n    YEAR(fechas.fecha_movimiento) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, fechas.fecha_movimiento) IN (1, 7) THEN 1\\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM (\\n    SELECT DISTINCT fecha_entrega AS fecha_movimiento FROM sup_entregas_silver WHERE fecha_entrega IS NOT NULL\\n    UNION\\n    SELECT DISTINCT fecha_entrega FROM spl_entregas_agencia_silver WHERE fecha_entrega IS NOT NULL\\n    UNION\\n    SELECT DISTINCT fecha_pago FROM bja_pagos_silver WHERE fecha_pago IS NOT NULL\\n) AS fechas',",
+						"     format: 'query') ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          fecha_key as integer,",
+						"          fecha as date,",
+						"          dia_semana as integer,",
+						"          nombre_dia as string,",
+						"          dia_mes as integer,",
+						"          mes as integer,",
+						"          nombre_mes as string,",
+						"          trimestre as integer,",
+						"          anio as integer,",
+						"          es_fin_semana as boolean",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          fecha_key,",
+						"          fecha,",
+						"          dia_semana,",
+						"          nombre_dia,",
+						"          dia_mes,",
+						"          mes,",
+						"          nombre_mes,",
+						"          trimestre,",
+						"          anio,",
+						"          es_fin_semana",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/sup_entregas_silver1')]",
+				"[concat(variables('factoryId'), '/datasets/dim_tiempo')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_hechos_subsidios')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "spl_entregas_agencia_silver1",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "gold_dim_producto",
+								"type": "DatasetReference"
+							},
+							"name": "producto"
+						},
+						{
+							"dataset": {
+								"referenceName": "gold_dim_punto_atencion",
+								"type": "DatasetReference"
+							},
+							"name": "puntoAtencion"
+						},
+						{
+							"dataset": {
+								"referenceName": "gold_dim_beneficiaria",
+								"type": "DatasetReference"
+							},
+							"name": "beneficiaria"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "gold_hechos_subsidios",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "join1"
+						},
+						{
+							"name": "join2"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "join3"
+						},
+						{
+							"name": "select2"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          fecha_key as integer,",
+						"          ci_origen as string,",
+						"          punto_origen as string,",
+						"          tipo_punto_origen as string,",
+						"          producto_origen as string,",
+						"          cantidad as integer,",
+						"          monto_bs as decimal(10,2),",
+						"          peso_kg as decimal(8,2),",
+						"          programa_origen as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: '-- 1. Entregas SUP\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_entrega AS DATE), 112) AS INT) AS fecha_key,\\n    LTRIM(RTRIM(CAST(ci_beneficiaria AS VARCHAR(50)))) AS ci_origen,\\n    LTRIM(RTRIM(CAST(establecimiento_id AS VARCHAR(50)))) AS punto_origen,\\n    \\'Centro de Salud\\' AS tipo_punto_origen,\\n    LTRIM(RTRIM(CAST(paquete_id AS VARCHAR(50)))) AS producto_origen,\\n    1 AS cantidad,\\n    0.0 AS monto_bs,\\n    peso_paquete_kg AS peso_kg,\\n    \\'SUP\\' AS programa_origen\\nFROM sup_entregas_silver\\n\\nUNION ALL\\n\\n-- 2. Entregas SPL Agencia (CORREGIDO: Devuelve IDs numéricos para cruce directo)\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_entrega AS DATE), 112) AS INT) AS fecha_key,\\n    LTRIM(RTRIM(CAST(ci_beneficiaria AS VARCHAR(50)))) AS ci_origen,\\n    CASE \\n        WHEN punto_entrega LIKE \\'%La Paz%\\' THEN \\'1\\'\\n        WHEN punto_entrega LIKE \\'%El Alto%\\' THEN \\'2\\'\\n        WHEN (punto_entrega LIKE \\'%Cochabamba%\\' OR punto_entrega LIKE \\'%Coochabamba%\\') THEN \\'3\\'\\n        WHEN punto_entrega LIKE \\'%Santa Cruz%\\' THEN \\'4\\'\\n        WHEN punto_entrega LIKE \\'%Oruro%\\' THEN \\'5\\'\\n        WHEN punto_entrega LIKE \\'%Tarija%\\' THEN \\'6\\'\\n        WHEN punto_entrega LIKE \\'%Sucre%\\' THEN \\'7\\'\\n        WHEN punto_entrega LIKE \\'%Trinidad%\\' THEN \\'8\\'\\n        WHEN punto_entrega LIKE \\'%Cobija%\\' THEN \\'9\\'\\n        WHEN (punto_entrega LIKE \\'%Potosí%\\' OR punto_entrega LIKE \\'%Potosi%\\') THEN \\'10\\'\\n        ELSE \\'0\\' \\n    END AS punto_origen,\\n    \\'Almacén\\' AS tipo_punto_origen, \\n    \\'SPL_P\\' AS producto_origen,\\n    1 AS cantidad,\\n    0.0 AS monto_bs,\\n    peso_kg AS peso_kg,\\n    \\'SPL\\' AS programa_origen\\nFROM spl_entregas_agencia_silver\\n\\nUNION ALL\\n\\n-- 3. Entregas SPL Supermercado\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_retiro AS DATE), 112) AS INT) AS fecha_key,\\n    LTRIM(RTRIM(CAST(ci_beneficiaria AS VARCHAR(50)))) AS ci_origen,\\n    LTRIM(RTRIM(CAST(supermercado_id AS VARCHAR(50)))) AS punto_origen, \\n    \\'Supermercado\\' AS tipo_punto_origen,\\n    \\'SPL_P\\' AS producto_origen,\\n    1 AS cantidad,\\n    0.0 AS monto_bs,\\n    cantidad_kg AS peso_kg, \\n    \\'SPL\\' AS programa_origen\\nFROM spl_entregas_supermercado_silver\\n\\nUNION ALL\\n\\n-- 4. Pagos BJA\\nSELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(fecha_pago AS DATE), 112) AS INT) AS fecha_key,\\n    LTRIM(RTRIM(CAST(ci_beneficiaria AS VARCHAR(50)))) AS ci_origen,\\n    \\'N/A\\' AS punto_origen,\\n    \\'Canal Digital / Banco\\' AS tipo_punto_origen,\\n    \\'BJA_B\\' AS producto_origen,\\n    0 AS cantidad,\\n    monto_bs AS monto_bs,\\n    0.0 AS peso_kg,\\n    \\'BJA\\' AS programa_origen\\nFROM bja_pagos_silver',",
+						"     format: 'query') ~> source1",
+						"source(output(",
+						"          producto_key as integer,",
+						"          codigo_origen as string,",
+						"          nombre_producto as string,",
+						"          tipo_beneficio as string,",
+						"          programa as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> producto",
+						"source(output(",
+						"          punto_key as integer,",
+						"          codigo_origen as string,",
+						"          nombre_punto as string,",
+						"          tipo_punto as string,",
+						"          municipio as string,",
+						"          departamento as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> puntoAtencion",
+						"source(output(",
+						"          beneficiaria_key as integer,",
+						"          ci as string,",
+						"          nombre_completo as string,",
+						"          genero as string,",
+						"          municipio_residencia as string,",
+						"          fecha_nacimiento as date",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> beneficiaria",
+						"source1, producto join(producto_origen == codigo_origen,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join1",
+						"join1, derivedColumn1 join(punto_origen == dim_codigo_limpio",
+						"     && tipo_punto_origen == tipo_punto,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join2",
+						"puntoAtencion derive(dim_codigo_limpio = trim(upper(toString(codigo_origen)))) ~> derivedColumn1",
+						"join2 select(mapColumn(",
+						"          fecha_key,",
+						"          ci_origen,",
+						"          cantidad,",
+						"          monto_bs,",
+						"          peso_kg,",
+						"          programa_origen,",
+						"          producto_key,",
+						"          punto_key",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1, beneficiaria join(ci_origen == ci,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join3",
+						"join3 select(mapColumn(",
+						"          fecha_key,",
+						"          cantidad,",
+						"          monto_bs,",
+						"          peso_kg,",
+						"          programa_origen,",
+						"          producto_key,",
+						"          punto_key,",
+						"          beneficiaria_key",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select2",
+						"select2 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          hecho_key as integer,",
+						"          fecha_key as integer,",
+						"          beneficiaria_key as integer,",
+						"          punto_key as integer,",
+						"          producto_key as integer,",
+						"          cantidad as integer,",
+						"          monto_bs as decimal(18,2),",
+						"          peso_kg as decimal(18,2),",
+						"          programa_origen as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          fecha_key,",
+						"          beneficiaria_key,",
+						"          punto_key,",
+						"          producto_key,",
+						"          cantidad,",
+						"          monto_bs,",
+						"          peso_kg,",
+						"          programa_origen",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/spl_entregas_agencia_silver1')]",
+				"[concat(variables('factoryId'), '/datasets/gold_dim_producto')]",
+				"[concat(variables('factoryId'), '/datasets/gold_dim_punto_atencion')]",
+				"[concat(variables('factoryId'), '/datasets/gold_dim_beneficiaria')]",
+				"[concat(variables('factoryId'), '/datasets/gold_hechos_subsidios')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "gold_dim_tiempo",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Data flow2",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Data flow1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "gold_hechos_subsidios",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"producto": {},
+									"puntoAtencion": {},
+									"beneficiaria": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/gold_dim_tiempo')]",
+				"[concat(variables('factoryId'), '/dataflows/gold_hechos_subsidios')]"
 			]
 		}
 	]
