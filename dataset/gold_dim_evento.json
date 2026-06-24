@@ -1,0 +1,33 @@
+{
+	"name": "gold_dim_evento",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "evento_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "categoria_evento",
+				"type": "varchar"
+			},
+			{
+				"name": "nombre_evento",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "gold_dim_evento"
+		}
+	}
+}

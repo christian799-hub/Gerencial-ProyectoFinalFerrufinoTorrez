@@ -1,0 +1,93 @@
+{
+	"name": "gold_fact_logistica_entregas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "hecho_logistico_key",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "fecha_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "beneficiaria_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "punto_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "producto_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "transportista_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "vehiculo_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "evento_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_lote",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_boleta_sup",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_guia_remision",
+				"type": "varchar"
+			},
+			{
+				"name": "cantidad_bienes",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "peso_total_kg",
+				"type": "decimal",
+				"precision": 8,
+				"scale": 2
+			},
+			{
+				"name": "valor_economico_bs",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "temperatura_llegada",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "gold_fact_logistica_entregas"
+		}
+	}
+}

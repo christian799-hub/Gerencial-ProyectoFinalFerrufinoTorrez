@@ -1,0 +1,33 @@
+{
+	"name": "gold_dim_canal_pago",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "canal_pago_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nombre_canal",
+				"type": "varchar"
+			},
+			{
+				"name": "tipo_canal",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "gold_dim_canal_pago"
+		}
+	}
+}

@@ -1,0 +1,95 @@
+{
+	"name": "gold_fact_social_medico",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "hecho_social_key",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "fecha_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "beneficiaria_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "infante_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "establecimiento_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "caja_salud_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "empleador_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "canal_pago_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "evento_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_matricula_asegurado",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_comprobante_pago",
+				"type": "varchar"
+			},
+			{
+				"name": "semana_gestacion",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_control",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "peso_madre_kg",
+				"type": "decimal",
+				"precision": 5,
+				"scale": 2
+			},
+			{
+				"name": "monto_asignado_bs",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "gold_fact_social_medico"
+		}
+	}
+}

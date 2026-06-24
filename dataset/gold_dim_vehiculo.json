@@ -1,0 +1,38 @@
+{
+	"name": "gold_dim_vehiculo",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "vehiculo_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "placa",
+				"type": "varchar"
+			},
+			{
+				"name": "tipo_vehiculo",
+				"type": "varchar"
+			},
+			{
+				"name": "capacidad_max_kg",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "gold_dim_vehiculo"
+		}
+	}
+}

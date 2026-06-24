@@ -1,0 +1,41 @@
+{
+	"name": "gold_dim_punto_logistico",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "punto_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "tipo_punto",
+				"type": "varchar"
+			},
+			{
+				"name": "nombre_lugar",
+				"type": "varchar"
+			},
+			{
+				"name": "municipio",
+				"type": "varchar"
+			},
+			{
+				"name": "departamento",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "gold_dim_punto_logistico"
+		}
+	}
+}

@@ -1,0 +1,37 @@
+{
+	"name": "gold_dim_caja_salud",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "caja_salud_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "sigla",
+				"type": "varchar"
+			},
+			{
+				"name": "nombre_caja",
+				"type": "varchar"
+			},
+			{
+				"name": "tipo_caja",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "gold_dim_caja_salud"
+		}
+	}
+}

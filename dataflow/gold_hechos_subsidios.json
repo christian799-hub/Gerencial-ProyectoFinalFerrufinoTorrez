@@ -15,33 +15,17 @@
 					"name": "source1"
 				},
 				{
-					"dataset": {
-						"referenceName": "gold_dim_producto",
-						"type": "DatasetReference"
-					},
 					"name": "producto"
 				},
 				{
-					"dataset": {
-						"referenceName": "gold_dim_punto_atencion",
-						"type": "DatasetReference"
-					},
 					"name": "puntoAtencion"
 				},
 				{
-					"dataset": {
-						"referenceName": "gold_dim_beneficiaria",
-						"type": "DatasetReference"
-					},
 					"name": "beneficiaria"
 				}
 			],
 			"sinks": [
 				{
-					"dataset": {
-						"referenceName": "gold_hechos_subsidios",
-						"type": "DatasetReference"
-					},
 					"name": "sink1"
 				}
 			],
@@ -97,9 +81,7 @@
 				"          programa as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> producto",
+				"     validateSchema: false) ~> producto",
 				"source(output(",
 				"          punto_key as integer,",
 				"          codigo_origen as string,",
@@ -109,9 +91,7 @@
 				"          departamento as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> puntoAtencion",
+				"     validateSchema: false) ~> puntoAtencion",
 				"source(output(",
 				"          beneficiaria_key as integer,",
 				"          ci as string,",
@@ -121,9 +101,7 @@
 				"          fecha_nacimiento as date",
 				"     ),",
 				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> beneficiaria",
+				"     validateSchema: false) ~> beneficiaria",
 				"source1, producto join(producto_origen == codigo_origen,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
@@ -169,25 +147,8 @@
 				"select2 derive(beneficiaria_key = iif(isNull(beneficiaria_key) || toString(beneficiaria_key) == 'NULL' || toString(beneficiaria_key) == '', toInteger(null()), toInteger(beneficiaria_key))) ~> derivedColumn2",
 				"filter1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          hecho_key as integer,",
-				"          fecha_key as integer,",
-				"          beneficiaria_key as integer,",
-				"          punto_key as integer,",
-				"          producto_key as integer,",
-				"          cantidad as integer,",
-				"          monto_bs as decimal(18,2),",
-				"          peso_kg as decimal(18,2),",
-				"          programa_origen as string",
-				"     ),",
-				"     deletable:false,",
-				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
-				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
 				"          fecha_key,",
 				"          beneficiaria_key,",
@@ -197,7 +158,8 @@
 				"          monto_bs,",
 				"          peso_kg,",
 				"          programa_origen",
-				"     )) ~> sink1"
+				"     ),",
+				"     format: 'table') ~> sink1"
 			]
 		}
 	}

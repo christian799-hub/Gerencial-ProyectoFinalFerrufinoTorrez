@@ -1,0 +1,41 @@
+{
+	"name": "gold_dim_empleador",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "empleador_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nit",
+				"type": "varchar"
+			},
+			{
+				"name": "razon_social",
+				"type": "varchar"
+			},
+			{
+				"name": "tipo_empleador",
+				"type": "varchar"
+			},
+			{
+				"name": "municipio",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "gold_dim_empleador"
+		}
+	}
+}

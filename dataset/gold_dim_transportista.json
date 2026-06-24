@@ -1,0 +1,37 @@
+{
+	"name": "gold_dim_transportista",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "transportista_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "razon_social",
+				"type": "varchar"
+			},
+			{
+				"name": "nit",
+				"type": "varchar"
+			},
+			{
+				"name": "tipo_vehiculo",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "gold_dim_transportista"
+		}
+	}
+}
