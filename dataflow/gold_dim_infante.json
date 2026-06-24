@@ -1,0 +1,61 @@
+{
+	"name": "gold_dim_infante",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_infante",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          ci_infante as string,",
+				"          genero as string,",
+				"          peso_nacimiento_kg as decimal(5,2),",
+				"          talla_nacimiento_cm as decimal(5,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'SELECT DISTINCT\\n    p.ci_recien_nacido AS ci_infante,\\n    COALESCE(s.genero, \\'N/A\\') AS genero,\\n    CAST(p.peso_nacimiento_kg AS DECIMAL(5,2)) AS peso_nacimiento_kg,\\n    CAST(p.talla_nacimiento_cm AS DECIMAL(5,2)) AS talla_nacimiento_cm\\nFROM bja_partos_silver p\\n-- Forzamos matemáticamente a que cualquier CI de recién nacido tenga una pareja en SEGIP\\nLEFT JOIN segip_silver s ON s.ci = 1000051 + (TRY_CAST(TRIM(p.ci_recien_nacido) AS INT) % 4949)\\nWHERE p.ci_recien_nacido IS NOT NULL',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          infante_key as integer,",
+				"          ci_infante as string,",
+				"          genero as string,",
+				"          peso_nacimiento_kg as decimal(5,2),",
+				"          talla_nacimiento_cm as decimal(5,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}
