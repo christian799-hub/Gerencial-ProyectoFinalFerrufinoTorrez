@@ -6,11 +6,269 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
-			"transformations": [],
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "Hechos"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_beneficiaria_madre",
+						"type": "DatasetReference"
+					},
+					"name": "beneficiariaMadre"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_punto_logistico",
+						"type": "DatasetReference"
+					},
+					"name": "puntoLogistico"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_producto",
+						"type": "DatasetReference"
+					},
+					"name": "producto"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_transportista",
+						"type": "DatasetReference"
+					},
+					"name": "transportista"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_vehiculo",
+						"type": "DatasetReference"
+					},
+					"name": "vehiculo"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_evento",
+						"type": "DatasetReference"
+					},
+					"name": "evento"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_fact_logistica_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "lookup2"
+				},
+				{
+					"name": "lookup3"
+				},
+				{
+					"name": "lookup4"
+				},
+				{
+					"name": "lookup5"
+				},
+				{
+					"name": "lookup6"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          fecha_key as integer,",
+				"          ci_beneficiaria as string,",
+				"          nombre_lugar as string,",
+				"          nombre_producto as string,",
+				"          nit_transportista as string,",
+				"          placa_vehiculo as string,",
+				"          nombre_evento as string,",
+				"          categoria_evento as string,",
+				"          nro_lote as string,",
+				"          nro_boleta_sup as string,",
+				"          nro_guia_remision as string,",
+				"          cantidad_bienes as integer,",
+				"          peso_total_kg as decimal(8,2),",
+				"          valor_economico_bs as decimal(10,2),",
+				"          temperatura_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'SELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_despacho AS DATE), 112) AS INT) AS fecha_key,\\n    NULL AS ci_beneficiaria,\\n    (SELECT TOP 1 nombre FROM as_almacenes_silver WHERE almacen_id = t.almacen_id) AS nombre_lugar,\\n    \\'Paquete Subsidio\\' AS nombre_producto,\\n    CAST((SELECT TOP 1 nit FROM as_transportistas_silver WHERE transportista_id = t.transportista_id) AS VARCHAR(50)) AS nit_transportista,\\n    (SELECT TOP 1 placa FROM as_vehiculos_silver WHERE vehiculo_id = t.vehiculo_id) AS placa_vehiculo,\\n    \\'Despacho Almacen\\' AS nombre_evento,\\n    \\'Logistico\\' AS categoria_evento,\\n    nro_lote,\\n    NULL AS nro_boleta_sup,\\n    nro_guia_despacho AS nro_guia_remision,\\n    CAST(cantidad_despachada AS INT) AS cantidad_bienes,\\n    CAST(0.00 AS DECIMAL(8,2)) AS peso_total_kg,\\n    0.00 AS valor_economico_bs,\\n    NULL AS temperatura_llegada\\nFROM as_despachos_silver t\\n\\nUNION ALL\\n\\nSELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_recepcion AS DATE), 112) AS INT) AS fecha_key,\\n    NULL AS ci_beneficiaria,\\n    (SELECT TOP 1 nombre FROM as_almacenes_silver WHERE almacen_id = t.almacen_id) AS nombre_lugar,\\n    \\'Paquete Subsidio\\' AS nombre_producto,\\n    CAST((SELECT TOP 1 nit FROM as_transportistas_silver WHERE transportista_id = t.transportista_id) AS VARCHAR(50)) AS nit_transportista,\\n    (SELECT TOP 1 placa FROM as_vehiculos_silver WHERE vehiculo_id = t.vehiculo_id) AS placa_vehiculo,\\n    \\'Recepcion Almacen\\' AS nombre_evento,\\n    \\'Logistico\\' AS categoria_evento,\\n    nro_lote,\\n    NULL AS nro_boleta_sup,\\n    nro_guia_remision,\\n    CAST(cantidad_recibida AS INT) AS cantidad_bienes,\\n    CAST(0.00 AS DECIMAL(8,2)) AS peso_total_kg,\\n    0.00 AS valor_economico_bs,\\n    temperatura_llegada\\nFROM as_recepciones_silver t\\n\\nUNION ALL\\n\\nSELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_entrega AS DATE), 112) AS INT) AS fecha_key,\\n    ci_beneficiaria,\\n    punto_entrega AS nombre_lugar,\\n    productos AS nombre_producto,\\n    NULL AS nit_transportista,\\n    NULL AS placa_vehiculo,\\n    \\'Entrega Agencia\\' AS nombre_evento,\\n    \\'Logistico\\' AS categoria_evento,\\n    lote AS nro_lote,\\n    NULL AS nro_boleta_sup,\\n    NULL AS nro_guia_remision,\\n    1 AS cantidad_bienes,\\n    CAST(peso_kg AS DECIMAL(8,2)) AS peso_total_kg,\\n    0.00 AS valor_economico_bs,\\n    NULL AS temperatura_llegada\\nFROM spl_entregas_agencia_silver t\\n\\nUNION ALL\\n\\nSELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_retiro AS DATE), 112) AS INT) AS fecha_key,\\n    ci_beneficiaria,\\n    (SELECT TOP 1 CONCAT(cadena, \\' - \\', sucursal) FROM spl_supermercados_autorizados_silver WHERE supermercado_id = t.supermercado_id) AS nombre_lugar,\\n    tipo_carne AS nombre_producto,\\n    NULL AS nit_transportista,\\n    NULL AS placa_vehiculo,\\n    \\'Entrega Supermercado\\' AS nombre_evento,\\n    \\'Logistico\\' AS categoria_evento,\\n    \\'N/A\\' AS nro_lote,\\n    NULL AS nro_boleta_sup,\\n    NULL AS nro_guia_remision,\\n    1 AS cantidad_bienes,\\n    CAST(cantidad_kg AS DECIMAL(8,2)) AS peso_total_kg,\\n    CAST(monto_bs AS DECIMAL(10,2)) AS valor_economico_bs,\\n    NULL AS temperatura_llegada\\nFROM spl_entregas_supermercado_silver t\\n\\nUNION ALL\\n\\nSELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_entrega AS DATE), 112) AS INT) AS fecha_key,\\n    ci_beneficiaria,\\n    (SELECT TOP 1 nombre FROM sup_establecimientos_silver WHERE establecimiento_id = t.establecimiento_id) AS nombre_lugar,\\n    paquete_nombre AS nombre_producto,\\n    NULL AS nit_transportista,\\n    NULL AS placa_vehiculo,\\n    \\'Entrega Paquete Subsidio\\' AS nombre_evento,\\n    \\'Logistico\\' AS categoria_evento,\\n    lote_produccion AS nro_lote,\\n    CAST((SELECT TOP 1 nro_boleta FROM sup_boletas_silver WHERE boleta_id = t.boleta_id) AS VARCHAR(100)) AS nro_boleta_sup,\\n    NULL AS nro_guia_remision,\\n    1 AS cantidad_bienes,\\n    CAST(peso_paquete_kg AS DECIMAL(8,2)) AS peso_total_kg,\\n    0.00 AS valor_economico_bs,\\n    NULL AS temperatura_llegada\\nFROM sup_entregas_silver t',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> Hechos",
+				"source(output(",
+				"          beneficiaria_key as integer,",
+				"          ci as string,",
+				"          nombre_completo as string,",
+				"          municipio_residencia as string,",
+				"          fecha_nacimiento as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> beneficiariaMadre",
+				"source(output(",
+				"          punto_key as integer,",
+				"          tipo_punto as string,",
+				"          nombre_lugar as string,",
+				"          municipio as string,",
+				"          departamento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> puntoLogistico",
+				"source(output(",
+				"          producto_key as integer,",
+				"          nombre_producto as string,",
+				"          tipo_beneficio as string,",
+				"          programa as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> producto",
+				"source(output(",
+				"          transportista_key as integer,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          tipo_vehiculo as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> transportista",
+				"source(output(",
+				"          vehiculo_key as integer,",
+				"          placa as string,",
+				"          tipo_vehiculo as string,",
+				"          capacidad_max_kg as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> vehiculo",
+				"source(output(",
+				"          evento_key as integer,",
+				"          categoria_evento as string,",
+				"          nombre_evento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> evento",
+				"Hechos, beneficiariaMadre lookup(ci_beneficiaria == ci,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1, puntoLogistico lookup(Hechos@nombre_lugar == puntoLogistico@nombre_lugar,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup2",
+				"lookup2, producto lookup(Hechos@nombre_producto == producto@nombre_producto,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup3",
+				"lookup3, transportista lookup(nit_transportista == nit,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup4",
+				"lookup4, vehiculo lookup(placa_vehiculo == placa,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup5",
+				"lookup5, evento lookup(Hechos@nombre_evento == evento@nombre_evento",
+				"     && Hechos@categoria_evento == evento@categoria_evento,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup6",
+				"lookup6 derive(beneficiaria_key = coalesce(toInteger(beneficiaria_key), -1),",
+				"          punto_key = coalesce(toInteger(punto_key), -1),",
+				"          producto_key = coalesce(toInteger(producto_key), -1),",
+				"          transportista_key = coalesce(toInteger(transportista_key), -1),",
+				"          vehiculo_key = coalesce(toInteger(vehiculo_key), -1),",
+				"          evento_key = coalesce(toInteger(evento_key), -1)) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          fecha_key,",
+				"          nro_lote,",
+				"          nro_boleta_sup,",
+				"          nro_guia_remision,",
+				"          cantidad_bienes,",
+				"          peso_total_kg,",
+				"          valor_economico_bs,",
+				"          temperatura_llegada,",
+				"          beneficiaria_key,",
+				"          punto_key,",
+				"          producto_key,",
+				"          transportista_key,",
+				"          vehiculo_key,",
+				"          evento_key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          hecho_logistico_key as long,",
+				"          fecha_key as integer,",
+				"          beneficiaria_key as integer,",
+				"          punto_key as integer,",
+				"          producto_key as integer,",
+				"          transportista_key as integer,",
+				"          vehiculo_key as integer,",
+				"          evento_key as integer,",
+				"          nro_lote as string,",
+				"          nro_boleta_sup as string,",
+				"          nro_guia_remision as string,",
+				"          cantidad_bienes as integer,",
+				"          peso_total_kg as decimal(8,2),",
+				"          valor_economico_bs as decimal(10,2),",
+				"          temperatura_llegada as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          fecha_key,",
+				"          beneficiaria_key,",
+				"          punto_key,",
+				"          producto_key,",
+				"          transportista_key,",
+				"          vehiculo_key,",
+				"          evento_key,",
+				"          nro_lote,",
+				"          nro_boleta_sup,",
+				"          nro_guia_remision,",
+				"          cantidad_bienes,",
+				"          peso_total_kg,",
+				"          valor_economico_bs,",
+				"          temperatura_llegada",
+				"     )) ~> sink1"
 			]
 		}
 	}

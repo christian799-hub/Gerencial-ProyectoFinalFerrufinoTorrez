@@ -5,7 +5,14 @@
 			{
 				"name": "gold_dim_Tiempo",
 				"type": "ExecuteDataFlow",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Script1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -365,6 +372,94 @@
 						"computeType": "General"
 					},
 					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "gold_fact_social_medico",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "gold_dim_vehiculo",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_gold_fact_social_medico",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "gold_fact_logistica_entrega",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "gold_fact_social_medico",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_gold_fact_logistica_entregas",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Script1",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "TRUNCATE TABLE gold_fact_social_medico\nTRUNCATE TABLE gold_fact_logistica_entregas\n\n-- PASO 2: ELIMINAR LOS DATOS DE LAS TABLAS DE DIMENSIONES\nTRUNCATE TABLE gold_dim_tiempo\nTRUNCATE TABLE gold_dim_beneficiaria_madre\nTRUNCATE TABLE gold_dim_infante\nTRUNCATE TABLE gold_dim_establecimiento_salud\nTRUNCATE TABLE gold_dim_punto_logistico\nTRUNCATE TABLE gold_dim_producto\nTRUNCATE TABLE gold_dim_empleador\nTRUNCATE TABLE gold_dim_caja_salud\nTRUNCATE TABLE gold_dim_transportista\nTRUNCATE TABLE gold_dim_evento\nTRUNCATE TABLE gold_dim_canal_pago\nTRUNCATE TABLE gold_dim_vehiculo"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
 				}
 			}
 		],

@@ -221,7 +221,8 @@
 				"          caja_salud_key = coalesce(toInteger(caja_salud_key), -1),",
 				"          canal_pago_key = coalesce(toInteger(canal_pago_key), -1),",
 				"          empleador_key = coalesce(toInteger(empleador_key), -1),",
-				"          evento_key = coalesce(toInteger(evento_key), -1)) ~> derivedColumn1",
+				"          evento_key = coalesce(toInteger(evento_key), -1),",
+				"          fecha_key = coalesce(toInteger(fecha_key), 19000101)) ~> derivedColumn1",
 				"lookup4, empleador lookup(nit_empleador == nit,",
 				"     multiple: false,",
 				"     pickup: 'any',",
@@ -279,7 +280,23 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          fecha_key,",
+				"          beneficiaria_key,",
+				"          infante_key,",
+				"          establecimiento_key,",
+				"          caja_salud_key,",
+				"          empleador_key,",
+				"          canal_pago_key,",
+				"          evento_key,",
+				"          nro_matricula_asegurado,",
+				"          nro_comprobante_pago,",
+				"          semana_gestacion,",
+				"          nro_control,",
+				"          peso_madre_kg,",
+				"          monto_asignado_bs",
+				"     )) ~> sink1"
 			]
 		}
 	}
