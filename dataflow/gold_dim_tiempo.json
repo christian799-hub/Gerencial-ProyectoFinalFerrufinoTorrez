@@ -8,9 +8,9 @@
 		"typeProperties": {
 			"sources": [
 				{
-					"dataset": {
-						"referenceName": "sup_entregas_silver1",
-						"type": "DatasetReference"
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
 					},
 					"name": "source1"
 				}
@@ -18,7 +18,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "dim_tiempo",
+						"referenceName": "gold_dim_tiempo",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -28,34 +28,27 @@
 			"scriptLines": [
 				"source(output(",
 				"          fecha_key as integer,",
-				"          fecha as date,",
-				"          dia_semana as integer,",
-				"          nombre_dia as string,",
-				"          dia_mes as integer,",
+				"          fecha as timestamp,",
+				"          anio as integer,",
 				"          mes as integer,",
 				"          nombre_mes as string,",
-				"          trimestre as integer,",
-				"          anio as integer,",
-				"          es_fin_semana as integer",
+				"          trimestre as integer",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: 'SELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(fechas.fecha_movimiento AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(fechas.fecha_movimiento AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, fechas.fecha_movimiento) AS dia_semana,\\n    DATENAME(WEEKDAY, fechas.fecha_movimiento) AS nombre_dia,\\n    DAY(fechas.fecha_movimiento) AS dia_mes,\\n    MONTH(fechas.fecha_movimiento) AS mes,\\n    DATENAME(MONTH, fechas.fecha_movimiento) AS nombre_mes,\\n    DATEPART(QUARTER, fechas.fecha_movimiento) AS trimestre,\\n    YEAR(fechas.fecha_movimiento) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, fechas.fecha_movimiento) IN (1, 7) THEN 1\\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM (\\n    SELECT DISTINCT fecha_entrega AS fecha_movimiento FROM sup_entregas_silver WHERE fecha_entrega IS NOT NULL\\n    UNION\\n    SELECT DISTINCT fecha_entrega FROM spl_entregas_agencia_silver WHERE fecha_entrega IS NOT NULL\\n    UNION\\n    SELECT DISTINCT fecha_pago FROM bja_pagos_silver WHERE fecha_pago IS NOT NULL\\n) AS fechas',",
-				"     format: 'query') ~> source1",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'SELECT \\n    -- Genera el fecha_key como entero (Ej: 20150101)\\n    CAST(CONVERT(VARCHAR(8), fecha, 112) AS INT) AS fecha_key,\\n    fecha,\\n    YEAR(fecha) AS anio,\\n    MONTH(fecha) AS mes,\\n    -- Traduce el número de mes a su nombre en texto plano\\n    CASE MONTH(fecha)\\n        WHEN 1 THEN \\'Enero\\' WHEN 2 THEN \\'Febrero\\' WHEN 3 THEN \\'Marzo\\'\\n        WHEN 4 THEN \\'Abril\\' WHEN 5 THEN \\'Mayo\\' WHEN 6 THEN \\'Junio\\'\\n        WHEN 7 THEN \\'Julio\\' WHEN 8 THEN \\'Agosto\\' WHEN 9 THEN \\'Septiembre\\'\\n        WHEN 10 THEN \\'Octubre\\' WHEN 11 THEN \\'Noviembre\\' WHEN 12 THEN \\'Diciembre\\'\\n    END AS nombre_mes,\\n    -- Calcula el trimestre automáticamente (1, 2, 3 o 4)\\n    DATEPART(QUARTER, fecha) AS trimestre\\nFROM (\\n    SELECT DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1, \\'2015-01-01\\') AS fecha\\n    FROM sys.all_objects s1\\n    CROSS JOIN sys.all_objects s2\\n) AS CalendarioBase\\n-- Filtramos el rango de fechas exacto que necesitas sin usar recursividad\\nWHERE fecha <= \\'2030-12-31\\'',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> source1",
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          fecha_key as integer,",
 				"          fecha as date,",
-				"          dia_semana as integer,",
-				"          nombre_dia as string,",
-				"          dia_mes as integer,",
+				"          anio as integer,",
 				"          mes as integer,",
 				"          nombre_mes as string,",
-				"          trimestre as integer,",
-				"          anio as integer,",
-				"          es_fin_semana as boolean",
+				"          trimestre as integer",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -68,14 +61,10 @@
 				"     mapColumn(",
 				"          fecha_key,",
 				"          fecha,",
-				"          dia_semana,",
-				"          nombre_dia,",
-				"          dia_mes,",
+				"          anio,",
 				"          mes,",
 				"          nombre_mes,",
-				"          trimestre,",
-				"          anio,",
-				"          es_fin_semana",
+				"          trimestre",
 				"     )) ~> sink1"
 			]
 		}

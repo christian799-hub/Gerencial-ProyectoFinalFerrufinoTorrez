@@ -1,5 +1,5 @@
 {
-	"name": "df_gold_dim_beneficiaria_madre",
+	"name": "df_gold_dim_vehiculo",
 	"properties": {
 		"folder": {
 			"name": "gold"
@@ -9,7 +9,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Segip_silver_1",
+						"referenceName": "as_vehiculos_silver1",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -18,7 +18,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "gold_dim_beneficiaria_madre",
+						"referenceName": "gold_dim_vehiculo",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -27,24 +27,22 @@
 			"transformations": [],
 			"scriptLines": [
 				"source(output(",
-				"          ci as string,",
-				"          nombre_completo as string,",
-				"          municipio_residencia as string,",
-				"          fecha_nacimiento as date",
+				"          placa as string,",
+				"          tipo_vehiculo as string,",
+				"          capacidad_max_kg as integer",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: 'SELECT DISTINCT\\n    CAST(ci AS VARCHAR(50)) AS ci,\\n    CONCAT(nombres, \\' \\', apellido_paterno, \\' \\', COALESCE(apellido_materno, \\'\\')) AS nombre_completo,\\n    municipio_residencia,\\n    CAST(fecha_nacimiento AS DATE) AS fecha_nacimiento\\nFROM segip_silver\\nWHERE ci IS NOT NULL',",
+				"     query: 'SELECT DISTINCT\\n    placa,\\n    tipo AS tipo_vehiculo,\\n    CAST(capacidad_kg AS INT) AS capacidad_max_kg\\nFROM as_vehiculos_silver\\nWHERE placa IS NOT NULL',",
 				"     format: 'query') ~> source1",
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
-				"          beneficiaria_key as integer,",
-				"          ci as string,",
-				"          nombre_completo as string,",
-				"          municipio_residencia as string,",
-				"          fecha_nacimiento as date",
+				"          vehiculo_key as integer,",
+				"          placa as string,",
+				"          tipo_vehiculo as string,",
+				"          capacidad_max_kg as integer",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -55,10 +53,9 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          ci,",
-				"          nombre_completo,",
-				"          municipio_residencia,",
-				"          fecha_nacimiento",
+				"          placa,",
+				"          tipo_vehiculo,",
+				"          capacidad_max_kg",
 				"     )) ~> sink1"
 			]
 		}

@@ -1,0 +1,67 @@
+{
+	"name": "gold_dim_punto_logistico",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_punto_logistico",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          tipo_punto as string,",
+				"          nombre_lugar as string,",
+				"          municipio as string,",
+				"          departamento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'SELECT DISTINCT\\n    \\'Almacen\\' AS tipo_punto,\\n    nombre AS nombre_lugar,\\n    municipio,\\n    departamento\\nFROM as_almacenes_silver\\n\\nUNION\\n\\nSELECT DISTINCT\\n    \\'Supermercado\\' AS tipo_punto,\\n    CONCAT(cadena, \\' - \\', sucursal) AS nombre_lugar,\\n    municipio,\\n    \\'N/A\\' AS departamento\\nFROM spl_supermercados_autorizados_silver',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          punto_key as integer,",
+				"          tipo_punto as string,",
+				"          nombre_lugar as string,",
+				"          municipio as string,",
+				"          departamento as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          tipo_punto,",
+				"          nombre_lugar,",
+				"          municipio,",
+				"          departamento",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

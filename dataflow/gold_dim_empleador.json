@@ -1,5 +1,5 @@
 {
-	"name": "df_gold_dim_beneficiaria_madre",
+	"name": "gold_dim_empleador",
 	"properties": {
 		"folder": {
 			"name": "gold"
@@ -9,7 +9,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Segip_silver_1",
+						"referenceName": "spl_empleadores_silver1",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -18,7 +18,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "gold_dim_beneficiaria_madre",
+						"referenceName": "gold_dim_empleador",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -27,24 +27,24 @@
 			"transformations": [],
 			"scriptLines": [
 				"source(output(",
-				"          ci as string,",
-				"          nombre_completo as string,",
-				"          municipio_residencia as string,",
-				"          fecha_nacimiento as date",
+				"          nit as string,",
+				"          razon_social as string,",
+				"          tipo_empleador as string,",
+				"          municipio as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: 'SELECT DISTINCT\\n    CAST(ci AS VARCHAR(50)) AS ci,\\n    CONCAT(nombres, \\' \\', apellido_paterno, \\' \\', COALESCE(apellido_materno, \\'\\')) AS nombre_completo,\\n    municipio_residencia,\\n    CAST(fecha_nacimiento AS DATE) AS fecha_nacimiento\\nFROM segip_silver\\nWHERE ci IS NOT NULL',",
+				"     query: 'SELECT DISTINCT\\n    CAST(nit AS VARCHAR(50)) AS nit,\\n    razon_social,\\n    tipo AS tipo_empleador,\\n    municipio\\nFROM spl_empleadores_silver\\nWHERE nit IS NOT NULL',",
 				"     format: 'query') ~> source1",
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
-				"          beneficiaria_key as integer,",
-				"          ci as string,",
-				"          nombre_completo as string,",
-				"          municipio_residencia as string,",
-				"          fecha_nacimiento as date",
+				"          empleador_key as integer,",
+				"          nit as string,",
+				"          razon_social as string,",
+				"          tipo_empleador as string,",
+				"          municipio as string",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -55,10 +55,10 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          ci,",
-				"          nombre_completo,",
-				"          municipio_residencia,",
-				"          fecha_nacimiento",
+				"          nit,",
+				"          razon_social,",
+				"          tipo_empleador,",
+				"          municipio",
 				"     )) ~> sink1"
 			]
 		}

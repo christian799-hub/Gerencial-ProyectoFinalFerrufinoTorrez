@@ -1,5 +1,5 @@
 {
-	"name": "df_gold_dim_beneficiaria_madre",
+	"name": "df_gold_canal_pago",
 	"properties": {
 		"folder": {
 			"name": "gold"
@@ -9,7 +9,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Segip_silver_1",
+						"referenceName": "bja_pagos_silver1",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -18,7 +18,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "gold_dim_beneficiaria_madre",
+						"referenceName": "gold_dim_canal_pago",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -27,24 +27,20 @@
 			"transformations": [],
 			"scriptLines": [
 				"source(output(",
-				"          ci as string,",
-				"          nombre_completo as string,",
-				"          municipio_residencia as string,",
-				"          fecha_nacimiento as date",
+				"          nombre_canal as string,",
+				"          tipo_canal as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: 'SELECT DISTINCT\\n    CAST(ci AS VARCHAR(50)) AS ci,\\n    CONCAT(nombres, \\' \\', apellido_paterno, \\' \\', COALESCE(apellido_materno, \\'\\')) AS nombre_completo,\\n    municipio_residencia,\\n    CAST(fecha_nacimiento AS DATE) AS fecha_nacimiento\\nFROM segip_silver\\nWHERE ci IS NOT NULL',",
+				"     query: 'SELECT DISTINCT\\n    canal_pago AS nombre_canal,\\n    CASE \\n        WHEN canal_pago LIKE \\'%Banco%\\' OR canal_pago LIKE \\'%Ventanilla%\\' THEN \\'Ventanilla\\'\\n        ELSE \\'Digital\\'\\n    END AS tipo_canal\\nFROM bja_pagos_silver\\nWHERE canal_pago IS NOT NULL',",
 				"     format: 'query') ~> source1",
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
-				"          beneficiaria_key as integer,",
-				"          ci as string,",
-				"          nombre_completo as string,",
-				"          municipio_residencia as string,",
-				"          fecha_nacimiento as date",
+				"          canal_pago_key as integer,",
+				"          nombre_canal as string,",
+				"          tipo_canal as string",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -55,10 +51,8 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          ci,",
-				"          nombre_completo,",
-				"          municipio_residencia,",
-				"          fecha_nacimiento",
+				"          nombre_canal,",
+				"          tipo_canal",
 				"     )) ~> sink1"
 			]
 		}

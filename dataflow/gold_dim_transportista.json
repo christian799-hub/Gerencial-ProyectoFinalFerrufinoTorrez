@@ -1,0 +1,64 @@
+{
+	"name": "gold_dim_transportista",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_transportista",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          tipo_vehiculo as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'SELECT DISTINCT\\n    t.razon_social,\\n    CAST(t.nit AS VARCHAR(50)) AS nit,\\n    COALESCE(v.tipo, \\'No Asignado\\') AS tipo_vehiculo\\nFROM as_transportistas_silver t\\nLEFT JOIN as_vehiculos_silver v ON t.transportista_id = v.transportista_id\\nWHERE t.nit IS NOT NULL',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          transportista_key as integer,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          tipo_vehiculo as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          razon_social,",
+				"          nit,",
+				"          tipo_vehiculo",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

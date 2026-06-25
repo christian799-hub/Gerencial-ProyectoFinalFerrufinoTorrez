@@ -1,0 +1,70 @@
+{
+	"name": "gold_dim_establecimiento_salud",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_establecimiento_salud",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'SELECT DISTINCT\\n    codigo_snis,\\n    nombre,\\n    nivel_atencion,\\n    municipio,\\n    departamento\\nFROM (\\n    SELECT codigo_snis, nombre, nivel_atencion, municipio, departamento \\n    FROM bja_establecimientos_salud_silver\\n    UNION\\n    SELECT codigo_snis, nombre, nivel_atencion, municipio, departamento \\n    FROM sup_establecimientos_silver\\n) AS fuentes_consolidadas\\nWHERE codigo_snis IS NOT NULL',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          establecimiento_key as integer,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          codigo_snis,",
+				"          nombre,",
+				"          nivel_atencion,",
+				"          municipio,",
+				"          departamento",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

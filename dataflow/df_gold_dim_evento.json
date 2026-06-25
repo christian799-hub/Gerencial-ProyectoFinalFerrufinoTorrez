@@ -1,0 +1,61 @@
+{
+	"name": "df_gold_dim_evento",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_evento",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          categoria_evento as string,",
+				"          nombre_evento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'SELECT \\'Clinico\\' AS categoria_evento, \\'Control Prenatal\\' AS nombre_evento\\nUNION ALL\\nSELECT \\'Clinico\\', \\'Control Pediatrico\\'\\nUNION ALL\\nSELECT \\'Clinico\\', \\'Parto\\'\\nUNION ALL\\nSELECT \\'Financiero\\', \\'Pago Bono\\'\\nUNION ALL\\nSELECT \\'Financiero\\', \\'Asignacion Mensual\\'\\nUNION ALL\\nSELECT \\'Logistico\\', \\'Inscripcion Programa\\'\\nUNION ALL\\nSELECT \\'Logistico\\', \\'Afiliacion\\'\\nUNION ALL\\nSELECT \\'Logistico\\', \\'Despacho Almacen\\'\\nUNION ALL\\nSELECT \\'Logistico\\', \\'Recepcion Almacen\\'\\nUNION ALL\\nSELECT \\'Logistico\\', \\'Entrega Agencia\\'\\nUNION ALL\\nSELECT \\'Logistico\\', \\'Entrega Supermercado\\'\\nUNION ALL\\nSELECT \\'Logistico\\', \\'Emision Boleta\\'\\nUNION ALL\\nSELECT \\'Logistico\\', \\'Entrega Paquete Subsidio\\'',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          evento_key as integer,",
+				"          categoria_evento as string,",
+				"          nombre_evento as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          categoria_evento,",
+				"          nombre_evento",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

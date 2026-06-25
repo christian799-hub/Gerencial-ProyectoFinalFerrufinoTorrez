@@ -1,5 +1,5 @@
 {
-	"name": "df_gold_dim_beneficiaria_madre",
+	"name": "gold_dim_caja_salud",
 	"properties": {
 		"folder": {
 			"name": "gold"
@@ -9,7 +9,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Segip_silver_1",
+						"referenceName": "spl_cajas_salud_silver1",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -18,7 +18,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "gold_dim_beneficiaria_madre",
+						"referenceName": "gold_dim_caja_salud",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -27,24 +27,22 @@
 			"transformations": [],
 			"scriptLines": [
 				"source(output(",
-				"          ci as string,",
-				"          nombre_completo as string,",
-				"          municipio_residencia as string,",
-				"          fecha_nacimiento as date",
+				"          sigla as string,",
+				"          nombre_caja as string,",
+				"          tipo_caja as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: 'SELECT DISTINCT\\n    CAST(ci AS VARCHAR(50)) AS ci,\\n    CONCAT(nombres, \\' \\', apellido_paterno, \\' \\', COALESCE(apellido_materno, \\'\\')) AS nombre_completo,\\n    municipio_residencia,\\n    CAST(fecha_nacimiento AS DATE) AS fecha_nacimiento\\nFROM segip_silver\\nWHERE ci IS NOT NULL',",
+				"     query: 'SELECT DISTINCT\\n    sigla,\\n    nombre AS nombre_caja,\\n    tipo AS tipo_caja\\nFROM spl_cajas_salud_silver\\nWHERE sigla IS NOT NULL',",
 				"     format: 'query') ~> source1",
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
-				"          beneficiaria_key as integer,",
-				"          ci as string,",
-				"          nombre_completo as string,",
-				"          municipio_residencia as string,",
-				"          fecha_nacimiento as date",
+				"          caja_salud_key as integer,",
+				"          sigla as string,",
+				"          nombre_caja as string,",
+				"          tipo_caja as string",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -55,10 +53,9 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          ci,",
-				"          nombre_completo,",
-				"          municipio_residencia,",
-				"          fecha_nacimiento",
+				"          sigla,",
+				"          nombre_caja,",
+				"          tipo_caja",
 				"     )) ~> sink1"
 			]
 		}

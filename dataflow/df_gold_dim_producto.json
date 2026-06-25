@@ -8,9 +8,9 @@
 		"typeProperties": {
 			"sources": [
 				{
-					"dataset": {
-						"referenceName": "sup_catalogoPaquetes_silver1",
-						"type": "DatasetReference"
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
 					},
 					"name": "source1"
 				}
@@ -18,7 +18,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "AzureSqlTable1",
+						"referenceName": "gold_dim_producto",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -27,21 +27,20 @@
 			"transformations": [],
 			"scriptLines": [
 				"source(output(",
-				"          codigo_origen as string,",
 				"          nombre_producto as string,",
 				"          tipo_beneficio as string,",
 				"          programa as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: '-- 1. Productos del SUP\\nSELECT \\n    CAST(paquete_id AS VARCHAR(50)) AS codigo_origen, \\n    nombre AS nombre_producto, \\n    \\'Paquete Físico\\' AS tipo_beneficio, \\n    \\'SUP\\' AS programa\\nFROM sup_catalogo_paquetes_silver\\n\\nUNION ALL\\n\\n-- 2. Beneficio BJA\\nSELECT \\n    \\'BJA_B\\' AS codigo_origen, \\n    \\'Bono Juana Azurduy\\' AS nombre_producto, \\n    \\'Efectivo\\' AS tipo_beneficio, \\n    \\'BJA\\' AS programa\\n\\nUNION ALL\\n\\n-- 3. Beneficios SPL - Paquete\\nSELECT \\n    \\'SPL_P\\' AS codigo_origen, \\n    \\'Paquete Lactancia/Prenatal\\' AS nombre_producto, \\n    \\'Paquete Físico\\' AS tipo_beneficio, \\n    \\'SPL\\' AS programa\\n\\nUNION ALL\\n\\n-- 4. Beneficios SPL - Carnes\\nSELECT \\n    \\'SPL_C\\' AS codigo_origen, \\n    \\'Subsidio Carnes\\' AS nombre_producto, \\n    \\'Especie\\' AS tipo_beneficio, \\n    \\'SPL\\' AS programa',",
-				"     format: 'query') ~> source1",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'SELECT DISTINCT\\n    nombre AS nombre_producto,\\n    \\'Paquete\\' AS tipo_beneficio,\\n    \\'SUP\\' AS programa\\nFROM sup_catalogo_paquetes_silver\\n\\nUNION\\n\\nSELECT DISTINCT\\n    concepto_pago AS nombre_producto,\\n    \\'Efectivo\\' AS tipo_beneficio,\\n    \\'BJA\\' AS programa\\nFROM bja_pagos_silver\\nWHERE concepto_pago IS NOT NULL\\n\\nUNION\\n\\nSELECT DISTINCT\\n    tipo_carne AS nombre_producto,\\n    \\'Especie\\' AS tipo_beneficio,\\n    \\'SPL\\' AS programa\\nFROM spl_entregas_supermercado_silver\\nWHERE tipo_carne IS NOT NULL\\n\\nUNION\\n\\nSELECT DISTINCT\\n    productos AS nombre_producto,\\n    \\'Especie\\' AS tipo_beneficio,\\n    \\'SPL\\' AS programa\\nFROM spl_entregas_agencia_silver\\nWHERE productos IS NOT NULL',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> source1",
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          producto_key as integer,",
-				"          codigo_origen as string,",
 				"          nombre_producto as string,",
 				"          tipo_beneficio as string,",
 				"          programa as string",
@@ -55,7 +54,6 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          codigo_origen,",
 				"          nombre_producto,",
 				"          tipo_beneficio,",
 				"          programa",
