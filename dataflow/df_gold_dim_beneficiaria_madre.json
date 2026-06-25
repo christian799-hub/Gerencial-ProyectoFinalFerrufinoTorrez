@@ -8,9 +8,9 @@
 		"typeProperties": {
 			"sources": [
 				{
-					"dataset": {
-						"referenceName": "Segip_silver_1",
-						"type": "DatasetReference"
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
 					},
 					"name": "source1"
 				}
@@ -34,9 +34,10 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: 'SELECT DISTINCT\\n    CAST(ci AS VARCHAR(50)) AS ci,\\n    CONCAT(nombres, \\' \\', apellido_paterno, \\' \\', COALESCE(apellido_materno, \\'\\')) AS nombre_completo,\\n    municipio_residencia,\\n    CAST(fecha_nacimiento AS DATE) AS fecha_nacimiento\\nFROM segip_silver\\nWHERE ci IS NOT NULL',",
-				"     format: 'query') ~> source1",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: '-- 1. Las madres oficiales del SEGIP (Tus datos originales)\\nSELECT DISTINCT\\n    CAST(ci AS VARCHAR(50)) AS ci,\\n    CONCAT(nombres, \\' \\', apellido_paterno, \\' \\', COALESCE(apellido_materno, \\'\\')) AS nombre_completo,\\n    municipio_residencia,\\n    CAST(fecha_nacimiento AS DATE) AS fecha_nacimiento\\nFROM segip_silver\\nWHERE ci IS NOT NULL\\n\\nUNION ALL\\n\\n-- 2. Las Madres Faltantes (Miembros Inferidos) detectadas en las transacciones\\nSELECT \\n    CAST(t.ci AS VARCHAR(50)) AS ci,\\n    \\'Madre no registrada en SEGIP\\' AS nombre_completo,\\n    \\'Desconocido\\' AS municipio_residencia,\\n    CAST(NULL AS DATE) AS fecha_nacimiento\\nFROM (\\n    -- Recolectamos todos los CIs de las tablas médicas/financieras\\n    SELECT ci_beneficiaria AS ci FROM bja_controles_prenatales_silver WHERE ci_beneficiaria IS NOT NULL\\n    UNION\\n    SELECT ci_beneficiaria AS ci FROM sup_controles_silver WHERE ci_beneficiaria IS NOT NULL\\n    UNION\\n    SELECT ci_madre AS ci FROM bja_controles_pediatricos_silver WHERE ci_madre IS NOT NULL\\n    UNION\\n    SELECT ci_madre AS ci FROM bja_partos_silver WHERE ci_madre IS NOT NULL\\n    UNION\\n    SELECT ci_beneficiaria AS ci FROM bja_pagos_silver WHERE ci_beneficiaria IS NOT NULL\\n    UNION\\n    SELECT ci_beneficiaria AS ci FROM spl_afiliaciones_silver WHERE ci_beneficiaria IS NOT NULL\\n    UNION\\n    SELECT ci_beneficiaria AS ci FROM bja_inscripciones_silver WHERE ci_beneficiaria IS NOT NULL\\n    UNION\\n    SELECT ci_beneficiaria AS ci FROM sup_inscripciones_silver WHERE ci_beneficiaria IS NOT NULL\\n) AS t\\n-- Cruzamos contra el SEGIP para ver cuáles NO existen\\nLEFT JOIN (\\n    SELECT DISTINCT CAST(ci AS VARCHAR(50)) AS ci\\n    FROM segip_silver\\n    WHERE ci IS NOT NULL\\n) AS s ON CAST(t.ci AS VARCHAR(50)) = s.ci\\nWHERE s.ci IS NULL',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> source1",
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",

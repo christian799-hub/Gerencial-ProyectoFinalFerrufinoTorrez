@@ -1,0 +1,286 @@
+{
+	"name": "df_gold_fact_social_medico",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "Fact"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_beneficiaria_madre",
+						"type": "DatasetReference"
+					},
+					"name": "beneficiariaMadre"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_infante",
+						"type": "DatasetReference"
+					},
+					"name": "infante"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_establecimiento_salud",
+						"type": "DatasetReference"
+					},
+					"name": "establecimientoSalud"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_caja_salud",
+						"type": "DatasetReference"
+					},
+					"name": "cajaSalud"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_empleador",
+						"type": "DatasetReference"
+					},
+					"name": "empleador"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_canal_pago",
+						"type": "DatasetReference"
+					},
+					"name": "canalPago"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_evento",
+						"type": "DatasetReference"
+					},
+					"name": "evento"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_fact_social_medico",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "lookup2"
+				},
+				{
+					"name": "lookup3"
+				},
+				{
+					"name": "lookup4"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "lookup5"
+				},
+				{
+					"name": "lookup6"
+				},
+				{
+					"name": "lookup7"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          fecha_key as integer,",
+				"          ci_beneficiaria as string,",
+				"          ci_infante as string,",
+				"          codigo_snis as string,",
+				"          sigla_caja as string,",
+				"          nit_empleador as string,",
+				"          nombre_canal as string,",
+				"          nombre_evento as string,",
+				"          categoria_evento as string,",
+				"          nro_matricula_asegurado as string,",
+				"          nro_comprobante_pago as string,",
+				"          semana_gestacion as integer,",
+				"          nro_control as integer,",
+				"          peso_madre_kg as decimal(5,2),",
+				"          monto_asignado_bs as decimal(10,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'SELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_control AS DATE), 112) AS INT) AS fecha_key,\\n    ci_beneficiaria,\\n    NULL AS ci_infante,\\n    (SELECT TOP 1 codigo_snis FROM bja_establecimientos_salud_silver WHERE establecimiento_id = t.establecimiento_id) AS codigo_snis,\\n    NULL AS sigla_caja,\\n    NULL AS nit_empleador,\\n    NULL AS nombre_canal,\\n    \\'Control Prenatal - BJA\\' AS nombre_evento,\\n    \\'Clinico\\' AS categoria_evento,\\n    NULL AS nro_matricula_asegurado,\\n    NULL AS nro_comprobante_pago,\\n    semana_gestacion,\\n    nro_control,\\n    CAST(peso_madre_kg AS DECIMAL(5,2)) AS peso_madre_kg,\\n    0.00 AS monto_asignado_bs\\nFROM bja_controles_prenatales_silver t\\n\\nUNION ALL\\n\\nSELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_control AS DATE), 112) AS INT) AS fecha_key,\\n    ci_beneficiaria,\\n    NULL AS ci_infante,\\n    (SELECT TOP 1 codigo_snis FROM sup_establecimientos_silver WHERE establecimiento_id = t.establecimiento_id) AS codigo_snis,\\n    NULL AS sigla_caja,\\n    NULL AS nit_empleador,\\n    NULL AS nombre_canal,\\n    \\'Control Prenatal - SUP\\' AS nombre_evento,\\n    \\'Clinico\\' AS categoria_evento,\\n    NULL AS nro_matricula_asegurado,\\n    NULL AS nro_comprobante_pago,\\n    semana_gestacion,\\n    nro_control,\\n    CAST(peso_madre_kg AS DECIMAL(5,2)) AS peso_madre_kg,\\n    0.00 AS monto_asignado_bs\\nFROM sup_controles_silver t\\n\\nUNION ALL\\n\\nSELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_control AS DATE), 112) AS INT) AS fecha_key,\\n    ci_madre AS ci_beneficiaria,\\n    ci_nino AS ci_infante,\\n    (SELECT TOP 1 codigo_snis FROM bja_establecimientos_salud_silver WHERE establecimiento_id = t.establecimiento_id) AS codigo_snis,\\n    NULL AS sigla_caja,\\n    NULL AS nit_empleador,\\n    NULL AS nombre_canal,\\n    \\'Control Pediatrico\\' AS nombre_evento,\\n    \\'Clinico\\' AS categoria_evento,\\n    NULL AS nro_matricula_asegurado,\\n    NULL AS nro_comprobante_pago,\\n    NULL AS semana_gestacion,\\n    TRY_CAST(nro_control AS INT) AS nro_control,\\n    NULL AS peso_madre_kg,\\n    0.00 AS monto_asignado_bs\\nFROM bja_controles_pediatricos_silver t\\n\\nUNION ALL\\n\\nSELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_parto AS DATE), 112) AS INT) AS fecha_key,\\n    ci_madre AS ci_beneficiaria,\\n    ci_recien_nacido AS ci_infante,\\n    (SELECT TOP 1 codigo_snis FROM bja_establecimientos_salud_silver WHERE establecimiento_id = t.establecimiento_id) AS codigo_snis,\\n    NULL AS sigla_caja,\\n    NULL AS nit_empleador,\\n    NULL AS nombre_canal,\\n    \\'Parto\\' AS nombre_evento,\\n    \\'Clinico\\' AS categoria_evento,\\n    NULL AS nro_matricula_asegurado,\\n    NULL AS nro_comprobante_pago,\\n    NULL AS semana_gestacion,\\n    NULL AS nro_control,\\n    NULL AS peso_madre_kg,\\n    0.00 AS monto_asignado_bs\\nFROM bja_partos_silver t\\n\\nUNION ALL\\n\\nSELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_pago AS DATE), 112) AS INT) AS fecha_key,\\n    ci_beneficiaria,\\n    NULL AS ci_infante,\\n    NULL AS codigo_snis,\\n    NULL AS sigla_caja,\\n    NULL AS nit_empleador,\\n    canal_pago AS nombre_canal,\\n    \\'Pago Bono\\' AS nombre_evento,\\n    \\'Financiero\\' AS categoria_evento,\\n    NULL AS nro_matricula_asegurado,\\n    nro_comprobante AS nro_comprobante_pago,\\n    NULL AS semana_gestacion,\\n    NULL AS nro_control,\\n    NULL AS peso_madre_kg,\\n    CAST(monto_bs AS DECIMAL(10,2)) AS monto_asignado_bs\\nFROM bja_pagos_silver t\\n\\nUNION ALL\\n\\nSELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_afiliacion AS DATE), 112) AS INT) AS fecha_key,\\n    ci_beneficiaria,\\n    NULL AS ci_infante,\\n    NULL AS codigo_snis,\\n    (SELECT TOP 1 sigla FROM spl_cajas_salud_silver WHERE caja_id = t.caja_id) AS sigla_caja,\\n    CAST((SELECT TOP 1 nit FROM spl_empleadores_silver WHERE empleador_id = t.empleador_id) AS VARCHAR(50)) AS nit_empleador,\\n    NULL AS nombre_canal,\\n    \\'Afiliacion\\' AS nombre_evento,\\n    \\'Clinico\\' AS categoria_evento,\\n    nro_matricula AS nro_matricula_asegurado,\\n    NULL AS nro_comprobante_pago,\\n    NULL AS semana_gestacion,\\n    NULL AS nro_control,\\n    NULL AS peso_madre_kg,\\n    0.00 AS monto_asignado_bs\\nFROM spl_afiliaciones_silver t\\n\\nUNION ALL\\n\\nSELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_inscripcion AS DATE), 112) AS INT) AS fecha_key,\\n    ci_beneficiaria,\\n    NULL AS ci_infante,\\n    (SELECT TOP 1 codigo_snis FROM bja_establecimientos_salud_silver WHERE establecimiento_id = t.establecimiento_id) AS codigo_snis,\\n    NULL AS sigla_caja,\\n    NULL AS nit_empleador,\\n    NULL AS nombre_canal,\\n    \\'Inscripcion Programa - BJA\\' AS nombre_evento,\\n    \\'Clinico\\' AS categoria_evento,\\n    NULL AS nro_matricula_asegurado,\\n    NULL AS nro_comprobante_pago,\\n    semana_gestacion,\\n    NULL AS nro_control,\\n    NULL AS peso_madre_kg,\\n    0.00 AS monto_asignado_bs\\nFROM bja_inscripciones_silver t\\n\\nUNION ALL\\n\\nSELECT \\n    TRY_CAST(CONVERT(VARCHAR(8), CAST(fecha_inscripcion AS DATE), 112) AS INT) AS fecha_key,\\n    ci_beneficiaria,\\n    NULL AS ci_infante,\\n    (SELECT TOP 1 codigo_snis FROM sup_establecimientos_silver WHERE establecimiento_id = t.establecimiento_id) AS codigo_snis,\\n    NULL AS sigla_caja,\\n    NULL AS nit_empleador,\\n    NULL AS nombre_canal,\\n    \\'Inscripcion Programa - SUP\\' AS nombre_evento,\\n    \\'Clinico\\' AS categoria_evento,\\n    NULL AS nro_matricula_asegurado,\\n    NULL AS nro_comprobante_pago,\\n    semana_gestacion,\\n    NULL AS nro_control,\\n    NULL AS peso_madre_kg,\\n    0.00 AS monto_asignado_bs\\nFROM sup_inscripciones_silver t',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> Fact",
+				"source(output(",
+				"          beneficiaria_key as integer,",
+				"          ci as string,",
+				"          nombre_completo as string,",
+				"          municipio_residencia as string,",
+				"          fecha_nacimiento as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> beneficiariaMadre",
+				"source(output(",
+				"          infante_key as integer,",
+				"          ci_infante as string,",
+				"          genero as string,",
+				"          peso_nacimiento_kg as decimal(5,2),",
+				"          talla_nacimiento_cm as decimal(5,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> infante",
+				"source(output(",
+				"          establecimiento_key as integer,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> establecimientoSalud",
+				"source(output(",
+				"          caja_salud_key as integer,",
+				"          sigla as string,",
+				"          nombre_caja as string,",
+				"          tipo_caja as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> cajaSalud",
+				"source(output(",
+				"          empleador_key as integer,",
+				"          nit as string,",
+				"          razon_social as string,",
+				"          tipo_empleador as string,",
+				"          municipio as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> empleador",
+				"source(output(",
+				"          canal_pago_key as integer,",
+				"          nombre_canal as string,",
+				"          tipo_canal as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> canalPago",
+				"source(output(",
+				"          evento_key as integer,",
+				"          categoria_evento as string,",
+				"          nombre_evento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> evento",
+				"Fact, beneficiariaMadre lookup(trim(toString(ci_beneficiaria)) == trim(toString(ci)),",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1, infante lookup(Fact@ci_infante == infante@ci_infante,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup2",
+				"lookup2, establecimientoSalud lookup(Fact@codigo_snis == establecimientoSalud@codigo_snis,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup3",
+				"lookup3, cajaSalud lookup(sigla_caja == sigla,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup4",
+				"lookup7 derive(beneficiaria_key = coalesce(toInteger(beneficiaria_key), -1),",
+				"          infante_key = coalesce(toInteger(infante_key), -1),",
+				"          establecimiento_key = coalesce(toInteger(establecimiento_key), -1),",
+				"          caja_salud_key = coalesce(toInteger(caja_salud_key), -1),",
+				"          canal_pago_key = coalesce(toInteger(canal_pago_key), -1),",
+				"          empleador_key = coalesce(toInteger(empleador_key), -1),",
+				"          evento_key = coalesce(toInteger(evento_key), -1)) ~> derivedColumn1",
+				"lookup4, empleador lookup(nit_empleador == nit,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup5",
+				"lookup5, canalPago lookup(Fact@nombre_canal == canalPago@nombre_canal,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup6",
+				"lookup6, evento lookup(Fact@nombre_evento == evento@nombre_evento",
+				"     && Fact@categoria_evento == evento@categoria_evento,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup7",
+				"derivedColumn1 select(mapColumn(",
+				"          fecha_key,",
+				"          nro_matricula_asegurado,",
+				"          nro_comprobante_pago,",
+				"          semana_gestacion,",
+				"          nro_control,",
+				"          peso_madre_kg,",
+				"          monto_asignado_bs,",
+				"          beneficiaria_key,",
+				"          infante_key,",
+				"          establecimiento_key,",
+				"          caja_salud_key,",
+				"          empleador_key,",
+				"          canal_pago_key,",
+				"          evento_key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          hecho_social_key as long,",
+				"          fecha_key as integer,",
+				"          beneficiaria_key as integer,",
+				"          infante_key as integer,",
+				"          establecimiento_key as integer,",
+				"          caja_salud_key as integer,",
+				"          empleador_key as integer,",
+				"          canal_pago_key as integer,",
+				"          evento_key as integer,",
+				"          nro_matricula_asegurado as string,",
+				"          nro_comprobante_pago as string,",
+				"          semana_gestacion as integer,",
+				"          nro_control as integer,",
+				"          peso_madre_kg as decimal(5,2),",
+				"          monto_asignado_bs as decimal(10,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}
