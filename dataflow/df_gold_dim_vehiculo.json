@@ -8,9 +8,9 @@
 		"typeProperties": {
 			"sources": [
 				{
-					"dataset": {
-						"referenceName": "as_vehiculos_silver1",
-						"type": "DatasetReference"
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
 					},
 					"name": "source1"
 				}
@@ -33,9 +33,10 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
 				"     query: 'SELECT DISTINCT\\n    placa,\\n    tipo AS tipo_vehiculo,\\n    CAST(capacidad_kg AS INT) AS capacidad_max_kg\\nFROM as_vehiculos_silver\\nWHERE placa IS NOT NULL',",
-				"     format: 'query') ~> source1",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> source1",
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
